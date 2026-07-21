@@ -167,8 +167,8 @@
 </div>
 
 <script>
-    const SHEET_ID = '2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2';
-    const GVIZ_URL = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/gviz/tq?tqx=out:json`;
+    const SHEET_ID = '1qqhAWRNvpZsSWmJIMY6JV3qDA1D8VCTGIMrqws6hlBE';
+    const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
     async function loadLeaderboard() {
         const tbody = document.getElementById('leaderboard-body');
@@ -177,7 +177,6 @@
             if (!response.ok) throw new Error('Nelze načíst data z Google');
             
             const text = await response.text();
-            
             const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
             const data = JSON.parse(jsonString);
 
@@ -244,7 +243,7 @@
 
         } catch (err) {
             console.error('Chyba načítání:', err);
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba při načítání dat z Google Sheets.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba při načítání dat z Google Sheets. Ujistěte se, že je tabulka nastavená jako přístupná pro všechny s odkazem.</td></tr>';
         }
     }
 
