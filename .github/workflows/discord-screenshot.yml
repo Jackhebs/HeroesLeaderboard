@@ -6,67 +6,7 @@ name: Test Discord Workflow
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Test
         run: echo "Workflow funguje"
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Playwright
-        run: |
-          npm init -y
-          npm install playwright
-          npx playwright install chromium
-
-      - name: Take screenshot
-        run: |
-          cat > screenshot.js <<'EOF'
-          const { chromium } = require('playwright');
-
-          (async() => {
-            const browser = await chromium.launch({
-              headless: true
-            });
-
-            const page = await browser.newPage({
-              viewport: {
-                width: 1920,
-                height: 1080
-              }
-            });
-
-            await page.goto(
-              'https://jackhebs.github.io/HeroesLeaderboard/',
-              { waitUntil: 'networkidle' }
-            );
-
-            // počká na načtení tabulky/dat
-            await page.waitForTimeout(5000);
-
-            await page.screenshot({
-              path: 'heroes-leaderboard.png',
-              fullPage: true
-            });
-
-            await browser.close();
-          })();
-          EOF
-
-          node screenshot.js
-
-      - name: Send screenshot to Discord
-        env:
-          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        run: |
-          curl \
-          -H "Content-Type: multipart/form-data" \
-          -F "payload_json={\"content\":\"🏆 HeroesLeaderboard update\"}" \
-          -F "file=@heroes-leaderboard.png" \
-          $WEBHOOK
