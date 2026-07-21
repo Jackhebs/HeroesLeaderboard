@@ -1,5 +1,55 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
 
+function getLeague(points) {
+
+    if (points >= 3000) {
+        return {
+            name: "🐉 Legendární liga",
+            image: "images/Creature_Azure_Dragon.gif"
+        };
+    }
+
+    if (points >= 2500) {
+        return {
+            name: "🪽 Archandělská liga",
+            image: "images/Creature_Archangel.gif"
+        };
+    }
+
+    if (points >= 2000) {
+        return {
+            name: "✨ Dračí magie",
+            image: "images/Creature_Faerie_Dragon.gif"
+        };
+    }
+
+    if (points >= 1500) {
+        return {
+            name: "🪓 Monstrózní liga",
+            image: "images/Creature_Troll.gif"
+        };
+    }
+
+    if (points >= 1000) {
+        return {
+            name: "🦅 Královská liga",
+            image: "images/Creature_Royal_Griffin.gif"
+        };
+    }
+
+    if (points >= 500) {
+        return {
+            name: "🛡️ Strážcova liga",
+            image: "images/Creature_Pikeman.gif"
+        };
+    }
+
+    return {
+        name: "🥔 Sedlákova liga",
+        image: "images/Creature_Peasant.gif"
+    };
+
+}
 
 async function loadLeaderboard() {
 
@@ -100,21 +150,28 @@ async function loadLeaderboard() {
 
 
 
-            players.push({
-
-                name,
-                wins,
-                top3,
-                games,
-                losses,
-                winrate
-
-            });
+const points =
+    (wins * 100)
+    - (losses * 50)
+    + (top3 * 25);
 
 
-        }
+const league = getLeague(points);
 
 
+players.push({
+
+    name,
+    wins,
+    top3,
+    games,
+    losses,
+    winrate,
+    points,
+    league
+
+});
+}
 
 
         if(players.length === 0){
