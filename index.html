@@ -167,80 +167,53 @@
 </div>
 
 <script>
-    const SHEET_ID = '1qqhAWRNvpZsSWmJIMY6JV3qDA1D8VCTGIMrqws6hlBE';
-    const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+    // CSV URL adresa přímo pro tvůj list Leaderboard (gid=1436133630)
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
 
     async function loadLeaderboard() {
         const tbody = document.getElementById('leaderboard-body');
         try {
-            const response = await fetch(GVIZ_URL);
+            const response = await fetch(CSV_URL);
             if (!response.ok) throw new Error('Nelze načíst data');
             
             const text = await response.text();
-            const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-            const data = JSON.parse(jsonString);
-
-            const rows = data.table.rows;
+            const lines = text.trim().split(/\r?\n/);
+            
             tbody.innerHTML = '';
-
             let players = [];
 
-            rows.forEach((row) => {
-                if (!row.c) return;
+            // Určíme oddělovač (čárka nebo středník)
+            const delimiter = text.includes(';') ? ';' : ',';
+
+            for (let i = 0; i < lines.length; i++) {
+                const cols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim());
+                if (!cols[0]) continue;
+
+                const name = cols[0];
+
+                // Přeskočíme záhlaví tabulky
+                if (['HRÁČ', 'Hráč', 'Jméno', 'NAME', '#'].includes(name)) continue;
+
+                const wins = parseInt(cols[1]) || 0;
+                const top3 = parseInt(cols[2]) || 0;
+                const games = parseInt(cols[3]) || 0;
+                const losses = parseInt(cols[4]) || 0;
                 
-                // Extrahujeme hodnoty ze všech buněk na řádku
-                const vals = row.c.map(cell => cell ? (cell.f !== undefined ? cell.f : cell.v) : null);
-
-                // Hledáme textové jméno (přeskočíme data Date(...), čísla a prázdné buňky)
-                let name = null;
-                let nameIdx = -1;
-
-                for (let i = 0; i < vals.length; i++) {
-                    const v = vals[i];
-                    if (typeof v === 'string' && !v.startsWith('Date(') && v.trim() !== '' && isNaN(v) && !['HRÁČ', 'Hráč', 'Jméno', 'NAME', '#'].includes(v.trim())) {
-                        name = v.trim();
-                        nameIdx = i;
-                        break;
-                    }
-                }
-
-                if (!name) return; // Není to platný řádek hráče
-
-                // Vytáhneme čísla z následujících sloupců po jménu
-                const nums = [];
-                for (let i = nameIdx + 1; i < vals.length; i++) {
-                    let rawVal = vals[i];
-                    if (rawVal !== null && rawVal !== undefined) {
-                        let strVal = String(rawVal).replace('%', '').replace(',', '.').trim();
-                        let numVal = parseFloat(strVal);
-                        if (!isNaN(numVal)) {
-                            nums.push(numVal);
-                        }
-                    }
-                }
-
-                // Přiřadíme hodnoty (s náhradními nulami, pokud chybí)
-                const wins = nums[0] !== undefined ? nums[0] : 0;
-                const top3 = nums[1] !== undefined ? nums[1] : 0;
-                const games = nums[2] !== undefined ? nums[2] : 0;
-                const losses = nums[3] !== undefined ? nums[3] : 0;
-                
-                let winrate = '0 %';
-                if (nums[4] !== undefined) {
-                    winrate = nums[4] <= 1 && nums[4] > 0 ? Math.round(nums[4] * 100) + ' %' : Math.round(nums[4]) + ' %';
-                } else if (games > 0) {
-                    winrate = Math.round((wins / games) * 100) + ' %';
+                let winrate = cols[5] || '0 %';
+                if (!winrate.includes('%')) {
+                    const num = parseFloat(winrate.replace(',', '.'));
+                    winrate = isNaN(num) ? '0 %' : (num <= 1 && num > 0 ? Math.round(num * 100) : Math.round(num)) + ' %';
                 }
 
                 players.push({ name, wins, top3, games, losses, winrate });
-            });
+            }
 
             if (players.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Nenalezeni žádní hráči v tabulce.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Žádní hráči v tabulce.</td></tr>';
                 return;
             }
 
-            // Seřadíme hráče podle výher sestupně
+            // Seřadíme hráče podle výher
             players.sort((a, b) => b.wins - a.wins);
 
             let topPlayer = players[0].name;
@@ -273,7 +246,7 @@
 
         } catch (err) {
             console.error('Chyba načítání:', err);
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba při zpracování dat.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba při načítání CSV dat.</td></tr>';
         }
     }
 
