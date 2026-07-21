@@ -1,13 +1,14 @@
-name: Discord HeroesLeaderboard Screenshot
+name: Test Discord Workflow
 
 "on":
-  schedule:
-    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
-  screenshot:
+  test:
     runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: echo "Workflow funguje"
 
     steps:
       - name: Checkout
