@@ -165,7 +165,7 @@ players.push({
     league
 
 });
-
+}
 
         if(players.length === 0){
 
