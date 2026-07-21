@@ -1,8 +1,8 @@
 name: Discord HeroesLeaderboard Screenshot
 
-on:
+"on":
   schedule:
-    - cron: "*/10 * * * *" # každých 10 minut
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
