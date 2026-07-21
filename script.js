@@ -150,13 +150,15 @@ async function loadLeaderboard() {
 
 
 
-const points =
-    (wins * 100)
-    - (losses * 50)
-    + (top3 * 25);
+const points = parseInt(cols[6]) || 0;
+
+const leagueName = cols[7] || "🥔 Sedlákova liga";
 
 
-const league = getLeague(points);
+const league = {
+    name: leagueName,
+    image: getLeague(points).image
+};
 
 
 players.push({
@@ -192,10 +194,9 @@ players.push({
 
 
 
-        players.sort(
-            (a,b)=> b.wins - a.wins
-        );
-
+       players.sort(
+    (a,b)=> b.points - a.points
+);
 
 
         players.forEach((p,index)=>{
