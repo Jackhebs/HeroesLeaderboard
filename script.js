@@ -1,55 +1,5 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
 
-function getLeague(points) {
-
-    if (points >= 3000) {
-        return {
-            name: "🐉 Legendární liga",
-            image: "images/Creature_Azure_Dragon.gif"
-        };
-    }
-
-    if (points >= 2500) {
-        return {
-            name: "🪽 Archandělská liga",
-            image: "images/Creature_Archangel.gif"
-        };
-    }
-
-    if (points >= 2000) {
-        return {
-            name: "✨ Dračí magie",
-            image: "images/Creature_Faerie_Dragon.gif"
-        };
-    }
-
-    if (points >= 1500) {
-        return {
-            name: "🪓 Monstrózní liga",
-            image: "images/Creature_Troll.gif"
-        };
-    }
-
-    if (points >= 1000) {
-        return {
-            name: "🦅 Královská liga",
-            image: "images/Creature_Royal_Griffin.gif"
-        };
-    }
-
-    if (points >= 500) {
-        return {
-            name: "🛡️ Strážcova liga",
-            image: "images/Creature_Pikeman.gif"
-        };
-    }
-
-    return {
-        name: "🥔 Sedlákova liga",
-        image: "images/Creature_Peasant.gif"
-    };
-
-}
 
 async function loadLeaderboard() {
 
@@ -148,33 +98,32 @@ async function loadLeaderboard() {
 
             }
 
-const points = parseInt(cols[6]) || 0;
-
-const league = getLeague(points);
 
 
-players.push({
+            players.push({
 
-    name,
-    wins,
-    top3,
-    games,
-    losses,
-    winrate,
-    points,
-    league
+                name,
+                wins,
+                top3,
+                games,
+                losses,
+                winrate
 
-});
-}
+            });
+
+
+        }
+
+
 
         if(players.length === 0){
 
             tbody.innerHTML =
             `
             <tr>
-            <td colspan="7">
-            Žádní hráči v tabulce.
-            </td>
+                <td colspan="7">
+                    Žádní hráči v tabulce.
+                </td>
             </tr>
             `;
 
@@ -184,10 +133,10 @@ players.push({
 
 
 
+        players.sort(
+            (a,b)=> b.wins - a.wins
+        );
 
-       players.sort(
-    (a,b)=> b.points - a.points
-);
 
 
         players.forEach((p,index)=>{
@@ -219,7 +168,6 @@ players.push({
                 medal='🥉 3.';
 
             }
-
 
 
 
@@ -258,22 +206,7 @@ players.push({
                     ${p.winrate}
                 </span>
             </td>
-<td class="league-cell">
 
-    <img 
-    src="${p.league.image}" 
-    class="league-image"
-    alt="${p.league.name}">
-
-    <div>
-        ${p.league.name}
-    </div>
-
-    <small>
-        ⭐ ${p.points} bodů
-    </small>
-
-</td>
             `;
 
 
@@ -286,7 +219,6 @@ players.push({
 
 
 
-
         document.getElementById('top-player').innerText =
             players[0].name;
 
@@ -294,7 +226,7 @@ players.push({
 
         const totalGames =
             players.reduce(
-                (sum,p)=>sum+p.wins,
+                (sum,p)=>sum+p.games,
                 0
             );
 
@@ -321,9 +253,9 @@ players.push({
         tbody.innerHTML =
         `
         <tr>
-        <td colspan="7" style="color:#ef4444;">
-        Chyba při načítání CSV dat.
-        </td>
+            <td colspan="7" style="color:#ef4444;">
+                Chyba při načítání CSV dat.
+            </td>
         </tr>
         `;
 
