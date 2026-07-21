@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Heroes III HotA - Live Leaderboard</title>
     <style>
+        .logo {
+    font-size: 70px;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 15px #f1c40f);
+}
+
+.live {
+    margin-top: 10px;
+    color: #22c55e;
+    font-weight: bold;
+    letter-spacing: 3px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    50% {
+        opacity: .4;
+    }
+}
+
+
+tbody tr {
+    transition: .25s;
+}
+
+tbody tr:hover {
+    transform: scale(1.02);
+    background: #292b35;
+}
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Open+Sans:wght@400;600;700&display=swap');
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -124,10 +153,23 @@
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>⚔️ Discord Heroes III HotA ⚔️</h1>
-        <p>Živě propojený žebříček šampionů</p>
+   <div class="header">
+
+    <div class="logo">
+        🏰
     </div>
+
+    <h1>Discord Heroes III HotA</h1>
+
+    <div class="live">
+        ● LIVE LEADERBOARD
+    </div>
+
+    <p>
+        Živě propojený žebříček šampionů
+    </p>
+
+</div>
 
     <div class="top-cards">
         <div class="card">
