@@ -266,7 +266,22 @@ players.push({
                     ${p.winrate}
                 </span>
             </td>
+<td class="league-cell">
 
+    <img 
+    src="${p.league.image}" 
+    class="league-image"
+    alt="${p.league.name}">
+
+    <div>
+        ${p.league.name}
+    </div>
+
+    <small>
+        ⭐ ${p.points} bodů
+    </small>
+
+</td>
             `;
 
 
