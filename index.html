@@ -174,7 +174,7 @@
         const tbody = document.getElementById('leaderboard-body');
         try {
             const response = await fetch(GVIZ_URL);
-            if (!response.ok) throw new Error('Nelze načíst data z Google');
+            if (!response.ok) throw new Error('Nelze načíst data');
             
             const text = await response.text();
             const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
@@ -183,57 +183,87 @@
             const rows = data.table.rows;
             tbody.innerHTML = '';
 
-            if (!rows || rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Žádná data v tabulce.</td></tr>';
-                return;
-            }
-
-            let topPlayer = '-';
-            let maxWins = -1;
-            let totalGamesSum = 0;
-            let count = 0;
+            let players = [];
 
             rows.forEach((row) => {
-                const c = row.c;
-                if (!c || !c[0] || c[0].v === null) return;
-
-                const name = String(c[0].v);
-                const wins = (c[1] && c[1].v !== null) ? Number(c[1].v) : 0;
-                const top3 = (c[2] && c[2].v !== null) ? Number(c[2].v) : 0;
-                const games = (c[3] && c[3].v !== null) ? Number(c[3].v) : 0;
-                const losses = (c[4] && c[4].v !== null) ? Number(c[4].v) : 0;
+                if (!row.c) return;
                 
-                let winrate = '0 %';
-                if (c[5] && c[5].v !== null) {
-                    if (typeof c[5].v === 'number') {
-                        winrate = Math.round(c[5].v * 100) + ' %';
-                    } else {
-                        winrate = String(c[5].f || c[5].v);
+                // Extrahujeme hodnoty ze všech buněk na řádku
+                const vals = row.c.map(cell => cell ? (cell.f !== undefined ? cell.f : cell.v) : null);
+
+                // Hledáme textové jméno (přeskočíme data Date(...), čísla a prázdné buňky)
+                let name = null;
+                let nameIdx = -1;
+
+                for (let i = 0; i < vals.length; i++) {
+                    const v = vals[i];
+                    if (typeof v === 'string' && !v.startsWith('Date(') && v.trim() !== '' && isNaN(v) && !['HRÁČ', 'Hráč', 'Jméno', 'NAME', '#'].includes(v.trim())) {
+                        name = v.trim();
+                        nameIdx = i;
+                        break;
                     }
                 }
 
-                if (wins > maxWins) {
-                    maxWins = wins;
-                    topPlayer = name;
+                if (!name) return; // Není to platný řádek hráče
+
+                // Vytáhneme čísla z následujících sloupců po jménu
+                const nums = [];
+                for (let i = nameIdx + 1; i < vals.length; i++) {
+                    let rawVal = vals[i];
+                    if (rawVal !== null && rawVal !== undefined) {
+                        let strVal = String(rawVal).replace('%', '').replace(',', '.').trim();
+                        let numVal = parseFloat(strVal);
+                        if (!isNaN(numVal)) {
+                            nums.push(numVal);
+                        }
+                    }
                 }
-                totalGamesSum += games;
-                count++;
+
+                // Přiřadíme hodnoty (s náhradními nulami, pokud chybí)
+                const wins = nums[0] !== undefined ? nums[0] : 0;
+                const top3 = nums[1] !== undefined ? nums[1] : 0;
+                const games = nums[2] !== undefined ? nums[2] : 0;
+                const losses = nums[3] !== undefined ? nums[3] : 0;
+                
+                let winrate = '0 %';
+                if (nums[4] !== undefined) {
+                    winrate = nums[4] <= 1 && nums[4] > 0 ? Math.round(nums[4] * 100) + ' %' : Math.round(nums[4]) + ' %';
+                } else if (games > 0) {
+                    winrate = Math.round((wins / games) * 100) + ' %';
+                }
+
+                players.push({ name, wins, top3, games, losses, winrate });
+            });
+
+            if (players.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Nenalezeni žádní hráči v tabulce.</td></tr>';
+                return;
+            }
+
+            // Seřadíme hráče podle výher sestupně
+            players.sort((a, b) => b.wins - a.wins);
+
+            let topPlayer = players[0].name;
+            let totalGamesSum = 0;
+
+            players.forEach((p, index) => {
+                totalGamesSum += p.games;
 
                 let rankClass = '';
-                let medal = `${count}.`;
-                if (count === 1) { rankClass = 'rank-1'; medal = '🥇 1.'; }
-                else if (count === 2) { rankClass = 'rank-2'; medal = '🥈 2.'; }
-                else if (count === 3) { rankClass = 'rank-3'; medal = '🥉 3.'; }
+                let medal = `${index + 1}.`;
+                if (index === 0) { rankClass = 'rank-1'; medal = '🥇 1.'; }
+                else if (index === 1) { rankClass = 'rank-2'; medal = '🥈 2.'; }
+                else if (index === 2) { rankClass = 'rank-3'; medal = '🥉 3.'; }
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="${rankClass}">${medal}</td>
-                    <td><strong>${name}</strong></td>
-                    <td>${wins}</td>
-                    <td>${top3}</td>
-                    <td>${games}</td>
-                    <td>${losses}</td>
-                    <td><span class="badge-winrate">${winrate}</span></td>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.wins}</td>
+                    <td>${p.top3}</td>
+                    <td>${p.games}</td>
+                    <td>${p.losses}</td>
+                    <td><span class="badge-winrate">${p.winrate}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -243,7 +273,7 @@
 
         } catch (err) {
             console.error('Chyba načítání:', err);
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba při načítání dat z Google Sheets. Ujistěte se, že je tabulka nastavená jako přístupná pro všechny s odkazem.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba při zpracování dat.</td></tr>';
         }
     }
 
