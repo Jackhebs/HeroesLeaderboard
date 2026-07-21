@@ -409,43 +409,5 @@ th, td {
 
 }
 
-    
-
-}
-.league-cell {
-
-    text-align:center;
-    color:#f1c40f;
-    font-family:'Cinzel', serif;
-
-}
-
-
-.league-image {
-
-    width:70px;
-    height:70px;
-    object-fit:contain;
-
-    filter:drop-shadow(0 0 8px rgba(241,196,15,0.8));
-
-    animation: unitFloat 3s ease-in-out infinite;
-
-}
-
-
-@keyframes unitFloat {
-
-    0%,100% {
-
-        transform:translateY(0);
-
-    }
-
-    50% {
-
-        transform:translateY(-6px);
-
-    }
 
 }
