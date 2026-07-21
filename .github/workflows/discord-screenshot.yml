@@ -3,7 +3,7 @@ name: Discord HeroesLeaderboard Screenshot
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/59 * * * *"
+    - cron: "0 */8 * * *"
 
 jobs:
   screenshot:
