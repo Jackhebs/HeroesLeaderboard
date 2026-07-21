@@ -148,17 +148,9 @@ async function loadLeaderboard() {
 
             }
 
-
-
 const points = parseInt(cols[6]) || 0;
 
-const leagueName = cols[7] || "🥔 Sedlákova liga";
-
-
-const league = {
-    name: leagueName,
-    image: getLeague(points).image
-};
+const league = getLeague(points);
 
 console.log("PLAYER:", name);
 console.log("POINTS:", points);
