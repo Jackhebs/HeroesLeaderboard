@@ -160,6 +160,10 @@ const league = {
     image: getLeague(points).image
 };
 
+console.log("PLAYER:", name);
+console.log("POINTS:", points);
+console.log("LEAGUE:", leagueName);
+
 
 players.push({
 
