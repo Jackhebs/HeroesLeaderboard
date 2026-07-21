@@ -167,39 +167,47 @@
 </div>
 
 <script>
-    // Google Visualization API callback - spolehlivé načítání dat bez CORS blokování
-    function renderLeaderboard(json) {
-        try {
-            const rows = json.table.rows;
-            const tbody = document.getElementById('leaderboard-body');
-            tbody.innerHTML = '';
+    const GOOGLE_PUBHTML_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pubhtml';
 
-            if (!rows || rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Zatím žádná data.</td></tr>';
-                return;
+    async function loadLeaderboard() {
+        const tbody = document.getElementById('leaderboard-body');
+        try {
+            const csvUrl = GOOGLE_PUBHTML_URL.replace(/\/pubhtml.*$/, '/pub?output=csv');
+            const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(csvUrl);
+
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error('Chyba odpovědi serveru');
+            
+            const text = await response.text();
+            
+            if (!text || text.includes('<!DOCTYPE html>')) {
+                throw new Error('Neplatná data');
             }
+
+            const delimiter = text.includes(';') ? ';' : ',';
+            const lines = text.trim().split(/\r?\n/);
+            
+            tbody.innerHTML = '';
 
             let topPlayer = '-';
             let maxWins = -1;
             let totalGamesSum = 0;
+            let count = 0;
 
-            rows.forEach((row, index) => {
-                const c = row.c;
-                if (!c || !c[0] || !c[0].v) return;
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim());
+                if (!cols[0]) continue;
 
-                const name = c[0] ? String(c[0].v) : 'Neznámý';
-                const wins = (c[1] && c[1].v !== null) ? Number(c[1].v) : 0;
-                const top3 = (c[2] && c[2].v !== null) ? Number(c[2].v) : 0;
-                const games = (c[3] && c[3].v !== null) ? Number(c[3].v) : 0;
-                const losses = (c[4] && c[4].v !== null) ? Number(c[4].v) : 0;
-                
-                let winrate = '0 %';
-                if (c[5] && c[5].v !== null) {
-                    if (typeof c[5].v === 'number') {
-                        winrate = Math.round(c[5].v * 100) + ' %';
-                    } else {
-                        winrate = String(c[5].f || c[5].v);
-                    }
+                const name = cols[0];
+                const wins = parseInt(cols[1]) || 0;
+                const top3 = parseInt(cols[2]) || 0;
+                const games = parseInt(cols[3]) || 0;
+                const losses = parseInt(cols[4]) || 0;
+                let winrate = cols[5] || '0 %';
+
+                if (!winrate.includes('%')) {
+                    const num = parseFloat(winrate.replace(',', '.'));
+                    winrate = isNaN(num) ? '0 %' : Math.round(num * 100) + ' %';
                 }
 
                 if (wins > maxWins) {
@@ -207,12 +215,13 @@
                     topPlayer = name;
                 }
                 totalGamesSum += games;
+                count++;
 
                 let rankClass = '';
-                let medal = `${index + 1}.`;
-                if (index === 0) { rankClass = 'rank-1'; medal = '🥇 1.'; }
-                else if (index === 1) { rankClass = 'rank-2'; medal = '🥈 2.'; }
-                else if (index === 2) { rankClass = 'rank-3'; medal = '🥉 3.'; }
+                let medal = `${count}.`;
+                if (count === 1) { rankClass = 'rank-1'; medal = '🥇 1.'; }
+                else if (count === 2) { rankClass = 'rank-2'; medal = '🥈 2.'; }
+                else if (count === 3) { rankClass = 'rank-3'; medal = '🥉 3.'; }
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -225,24 +234,22 @@
                     <td><span class="badge-winrate">${winrate}</span></td>
                 `;
                 tbody.appendChild(tr);
-            });
+            }
 
-            document.getElementById('top-player').innerText = topPlayer;
-            document.getElementById('total-games').innerText = Math.round(totalGamesSum / 2);
+            if (count === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Zatím žádná data v tabulce.</td></tr>';
+            } else {
+                document.getElementById('top-player').innerText = topPlayer;
+                document.getElementById('total-games').innerText = Math.round(totalGamesSum / 2);
+            }
 
-        } catch (error) {
-            console.error('Chyba:', error);
-            document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba při zpracování dat.</td></tr>';
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba při načítání dat. Zkontrolujte publikování tabulky.</td></tr>';
         }
     }
 
-    // Načtení dat pomocí oficiálního Google JSONP rozhraní
-    const script = document.createElement('script');
-    script.src = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/gviz/tq?gid=1436133630&tqx=responseHandler:renderLeaderboard';
-    script.onerror = function() {
-        document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba načítání dat z Google Sheets.</td></tr>';
-    };
-    document.head.appendChild(script);
+    loadLeaderboard();
 </script>
 
 </body>
