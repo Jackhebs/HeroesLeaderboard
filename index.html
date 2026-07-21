@@ -3,60 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heroes III HotA - Live Leaderboard</title>
+    <title>Heroes III HotA - Leaderboard</title>
     <style>
-        .logo {
-    font-size: 70px;
-    margin-bottom: 10px;
-    filter: drop-shadow(0 0 15px #f1c40f);
-}
-
-.live {
-    margin-top: 10px;
-    color: #22c55e;
-    font-weight: bold;
-    letter-spacing: 3px;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    50% {
-        opacity: .4;
-    }
-}
-
-
-tbody tr {
-    transition: .25s;
-}
-
-tbody tr:hover {
-    transform: scale(1.02);
-    background: #292b35;
-}
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Open+Sans:wght@400;600;700&display=swap');
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background-color: #0b0c10;
-            background-image: radial-gradient(circle at center, #1f2833 0%, #0b0c10 100%);
+            /* Kamenná textura v pozadí + tmavý přechod */
+            background-color: #0d0d11;
+            background-image: 
+                radial-gradient(circle at center, rgba(31, 40, 51, 0.85) 0%, rgba(11, 12, 16, 0.95) 100%),
+                url('https://www.transparenttextures.com/patterns/dark-stone-wall.png');
             color: #c5a059;
             font-family: 'Open Sans', sans-serif;
             min-height: 100vh;
             padding: 20px;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
         }
 
         .container {
             width: 100%;
             max-width: 900px;
+            margin-top: 20px;
             background: linear-gradient(180deg, #18191f 0%, #101114 100%);
+            /* Kamenné okraje a styl desky z Heroes III */
             border: 3px solid #c5a059;
             border-radius: 8px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(197, 160, 89, 0.2);
-            padding: 25px;
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.95), inset 0 0 20px rgba(197, 160, 89, 0.15);
+            padding: 30px;
+            position: relative;
         }
 
         .header {
@@ -66,16 +44,29 @@ tbody tr:hover {
             margin-bottom: 25px;
         }
 
+        .logo {
+            font-size: 60px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(241, 196, 15, 0.5));
+            display: inline-block;
+        }
+
         .header h1 {
             font-family: 'Cinzel', serif;
             font-size: 2.2rem;
             color: #f1c40f;
-            text-shadow: 2px 2px 4px #000, 0 0 10px rgba(241, 196, 15, 0.4);
+            text-shadow: 2px 2px 4px #000, 0 0 12px rgba(241, 196, 15, 0.3);
             letter-spacing: 2px;
             text-transform: uppercase;
         }
 
-        .header p { color: #8a8d93; font-size: 0.95rem; margin-top: 5px; }
+        .header p { 
+            color: #a0a3a8; 
+            font-size: 0.95rem; 
+            margin-top: 8px;
+            letter-spacing: 1px;
+            font-style: italic;
+        }
 
         .top-cards {
             display: grid;
@@ -90,7 +81,7 @@ tbody tr:hover {
             border-radius: 6px;
             padding: 15px;
             text-align: center;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
         }
 
         .card .title { font-size: 0.8rem; color: #8a8d93; text-transform: uppercase; font-weight: 700; }
@@ -124,8 +115,16 @@ tbody tr:hover {
             color: #e0e0e0;
         }
 
-        tr:nth-child(even) { background-color: #14151a; }
-        tr:hover { background-color: #22242c; }
+        tbody tr {
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        tbody tr:nth-child(even) { background-color: #14151a; }
+        
+        tbody tr:hover {
+            transform: scale(1.01);
+            background: #23252e;
+        }
 
         .rank-1 { color: #f1c40f; font-weight: bold; }
         .rank-2 { color: #e2e8f0; font-weight: bold; }
@@ -144,7 +143,7 @@ tbody tr:hover {
             margin-top: 25px;
             text-align: center;
             font-size: 0.8rem;
-            color: #555861;
+            color: #6b7280;
             border-top: 1px solid #282930;
             padding-top: 15px;
         }
@@ -153,23 +152,14 @@ tbody tr:hover {
 <body>
 
 <div class="container">
-   <div class="header">
+    <div class="header">
+        <!-- Temná ikona zkřížených mečů -->
+        <div class="logo">⚔️</div>
 
-    <div class="logo">
-        🏰
+        <h1>Discord Heroes III HotA</h1>
+
+        <p>Žebříček šampionů a válečníků</p>
     </div>
-
-    <h1>Discord Heroes III HotA</h1>
-
-    <div class="live">
-        ● LIVE LEADERBOARD
-    </div>
-
-    <p>
-        Živě propojený žebříček šampionů
-    </p>
-
-</div>
 
     <div class="top-cards">
         <div class="card">
@@ -177,12 +167,12 @@ tbody tr:hover {
             <div class="value" id="top-player">-</div>
         </div>
         <div class="card">
-            <div class="title">🎮 Celkem Zápasů Všech</div>
+            <div class="title">🎮 Celkem Odehraných Zápasů</div>
             <div class="value" id="total-games">-</div>
         </div>
     </div>
 
-    <div class="leaderboard-title">🏆 Žebříček Hráčů</div>
+    <div class="leaderboard-title">🏆 Síň slávy</div>
 
     <div class="table-wrapper">
         <table>
@@ -204,12 +194,11 @@ tbody tr:hover {
     </div>
 
     <div class="footer">
-        Automaticky synchronizováno s Google Tabulkou
+        Synchronizováno s Google Tabulkou
     </div>
 </div>
 
 <script>
-    // CSV URL adresa přímo pro tvůj list Leaderboard (gid=1436133630)
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
 
     async function loadLeaderboard() {
@@ -224,7 +213,6 @@ tbody tr:hover {
             tbody.innerHTML = '';
             let players = [];
 
-            // Určíme oddělovač (čárka nebo středník)
             const delimiter = text.includes(';') ? ';' : ',';
 
             for (let i = 0; i < lines.length; i++) {
@@ -233,7 +221,6 @@ tbody tr:hover {
 
                 const name = cols[0];
 
-                // Přeskočíme záhlaví tabulky
                 if (['HRÁČ', 'Hráč', 'Jméno', 'NAME', '#'].includes(name)) continue;
 
                 const wins = parseInt(cols[1]) || 0;
@@ -255,15 +242,11 @@ tbody tr:hover {
                 return;
             }
 
-            // Seřadíme hráče podle výher
             players.sort((a, b) => b.wins - a.wins);
 
             let topPlayer = players[0].name;
-            let totalGamesSum = 0;
 
             players.forEach((p, index) => {
-                totalGamesSum += p.games;
-
                 let rankClass = '';
                 let medal = `${index + 1}.`;
                 if (index === 0) { rankClass = 'rank-1'; medal = '🥇 1.'; }
@@ -284,9 +267,8 @@ tbody tr:hover {
             });
 
             document.getElementById('top-player').innerText = topPlayer;
-            // NOVÝ ŘÁDEK (spočítá celkové zápasy podle součtu 1. míst):
-const totalUniqueGames = players.reduce((sum, p) => sum + p.wins, 0);
-document.getElementById('total-games').innerText = totalUniqueGames;
+            const totalUniqueGames = players.reduce((sum, p) => sum + p.wins, 0);
+            document.getElementById('total-games').innerText = totalUniqueGames;
 
         } catch (err) {
             console.error('Chyba načítání:', err);
