@@ -1,4 +1,4 @@
-name: Test Discord Workflow
+name: Discord Test
 
 "on":
   workflow_dispatch:
