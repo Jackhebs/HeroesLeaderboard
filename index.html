@@ -242,7 +242,9 @@
             });
 
             document.getElementById('top-player').innerText = topPlayer;
-            document.getElementById('total-games').innerText = Math.round(totalGamesSum / 2);
+            // NOVÝ ŘÁDEK (spočítá celkové zápasy podle součtu 1. míst):
+const totalUniqueGames = players.reduce((sum, p) => sum + p.wins, 0);
+document.getElementById('total-games').innerText = totalUniqueGames;
 
         } catch (err) {
             console.error('Chyba načítání:', err);
