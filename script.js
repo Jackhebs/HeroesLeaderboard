@@ -154,7 +154,7 @@ const league = getLeague(points);
 
 console.log("PLAYER:", name);
 console.log("POINTS:", points);
-console.log("LEAGUE:", leagueName);
+console.log("LEAGUE:", league.name);
 
 
 players.push({
@@ -169,7 +169,6 @@ players.push({
     league
 
 });
-}
 
 
         if(players.length === 0){
