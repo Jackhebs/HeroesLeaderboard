@@ -167,28 +167,14 @@
 </div>
 
 <script>
-    const TARGET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
-    const CSV_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(TARGET_URL);
-
-    async function fetchLeaderboard() {
+    // Google Visualization API callback - spolehlivé načítání dat bez CORS blokování
+    function renderLeaderboard(json) {
         try {
-            const response = await fetch(CSV_URL);
-            if (!response.ok) throw new Error('Nelze načíst soubor z odkazu.');
-            
-            const data = await response.text();
-            
-            const delimiter = data.includes(';') ? ';' : ',';
-            
-            const rows = data.trim().split(/\r?\n/).map(row => 
-                row.split(delimiter).map(cell => cell.replace(/^"|"$/g, '').trim())
-            );
-            
-            const playersData = rows.slice(1);
-
+            const rows = json.table.rows;
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = '';
 
-            if (playersData.length === 0 || !playersData[0][0]) {
+            if (!rows || rows.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Zatím žádná data.</td></tr>';
                 return;
             }
@@ -197,19 +183,23 @@
             let maxWins = -1;
             let totalGamesSum = 0;
 
-            playersData.forEach((row, index) => {
-                if (row.length < 2 || !row[0]) return;
+            rows.forEach((row, index) => {
+                const c = row.c;
+                if (!c || !c[0] || !c[0].v) return;
 
-                const name = row[0];
-                const wins = parseInt(row[1]) || 0;
-                const top3 = parseInt(row[2]) || 0;
-                const games = parseInt(row[3]) || 0;
-                const losses = parseInt(row[4]) || 0;
-                let winrate = row[5] || '0 %';
-
-                if (!winrate.includes('%')) {
-                    const num = parseFloat(winrate.replace(',', '.'));
-                    winrate = isNaN(num) ? '0 %' : Math.round(num * 100) + ' %';
+                const name = c[0] ? String(c[0].v) : 'Neznámý';
+                const wins = (c[1] && c[1].v !== null) ? Number(c[1].v) : 0;
+                const top3 = (c[2] && c[2].v !== null) ? Number(c[2].v) : 0;
+                const games = (c[3] && c[3].v !== null) ? Number(c[3].v) : 0;
+                const losses = (c[4] && c[4].v !== null) ? Number(c[4].v) : 0;
+                
+                let winrate = '0 %';
+                if (c[5] && c[5].v !== null) {
+                    if (typeof c[5].v === 'number') {
+                        winrate = Math.round(c[5].v * 100) + ' %';
+                    } else {
+                        winrate = String(c[5].f || c[5].v);
+                    }
                 }
 
                 if (wins > maxWins) {
@@ -241,12 +231,18 @@
             document.getElementById('total-games').innerText = Math.round(totalGamesSum / 2);
 
         } catch (error) {
-            console.error('Chyba při načítání dat:', error);
-            document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba načítání dat z Google Sheets. Zkontrolujte odkaz v kódu.</td></tr>';
+            console.error('Chyba:', error);
+            document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba při zpracování dat.</td></tr>';
         }
     }
 
-    fetchLeaderboard();
+    // Načtení dat pomocí oficiálního Google JSONP rozhraní
+    const script = document.createElement('script');
+    script.src = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/gviz/tq?gid=1436133630&tqx=responseHandler:renderLeaderboard';
+    script.onerror = function() {
+        document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Chyba načítání dat z Google Sheets.</td></tr>';
+    };
+    document.head.appendChild(script);
 </script>
 
 </body>
