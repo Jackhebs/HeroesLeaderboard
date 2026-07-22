@@ -150,7 +150,7 @@ async function loadLeaderboard() {
 
 
 
-const rawPoints = cols[6] || '0'; // nebo podle indexu tvého sloupce Body
+const rawPoints = cols[7] || '0'; // nebo podle indexu tvého sloupce Body
 const points = parseInt(rawPoints.replace(/\D/g, '')) || 0;
 
 
