@@ -27,6 +27,7 @@ async function loadPlayerProfile() {
 
         let playerData = null;
 
+        // 1. Zpracování hlavního žebříčku (body, výhry, zápasy)
         for (let i = 0; i < lines.length; i++) {
             const cols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g,'').trim());
             
@@ -54,7 +55,7 @@ async function loadPlayerProfile() {
             return;
         }
 
-        // Zpracování detailů ze záložky Detaily (podle tvého obrázku: sloupec 1=Hrad, 2=Hrdina, 3=Mapa)
+        // 2. Zpracování detailů ze záložky Detaily (správné sloupce B, C, D)
         let playerCastle = '-';
         let playerHero = '-';
         let playerMap = '-';
@@ -71,19 +72,21 @@ async function loadPlayerProfile() {
                 if (['HRÁČ', 'Hráč', 'Jméno', 'NAME', 'Jméno hráče'].includes(dCols[0])) continue;
 
                 if (dCols[0].toLowerCase() === playerName.toLowerCase()) {
-                    playerCastle = dCols[1] || '-';
-                    playerHero = dCols[2] || '-';
-                    playerMap = dCols[3] || '-';
+                    playerCastle = dCols[1] || '-'; // Sloupec B
+                    playerHero = dCols[2] || '-';   // Sloupec C
+                    playerMap = dCols[3] || '-';    // Sloupec D
                     break;
                 }
             }
         }
 
+        // Naplnění horních karet statistik
         document.getElementById('player-wins').innerText = playerData.wins;
         document.getElementById('player-top3').innerText = playerData.top3;
         document.getElementById('player-games').innerText = playerData.games;
         document.getElementById('player-points').innerText = playerData.points + ' b';
 
+        // Naplnění textů detailů
         const castleEl = document.getElementById('player-castle');
         const castleIconEl = document.getElementById('player-castle-icon');
         const heroEl = document.getElementById('player-hero');
@@ -94,6 +97,7 @@ async function loadPlayerProfile() {
         if (heroEl) heroEl.innerText = playerHero;
         if (mapEl) mapEl.innerText = playerMap;
 
+        // Slovníky pro obrázky
         const castleImages = {
             'castle': 'images/castle.png',
             'rampart': 'images/rampart.png',
@@ -135,6 +139,7 @@ async function loadPlayerProfile() {
             }
         }
 
+        // 3. Vypíšeme detailní tabulku dole
         const tbody = document.getElementById('player-details-body');
         tbody.innerHTML = `
             <tr>
@@ -163,6 +168,7 @@ async function loadPlayerProfile() {
             </tr>
         `;
 
+        // 4. Vykreslení grafu
         const ctx = document.getElementById('playerWinChart').getContext('2d');
         new Chart(ctx, {
             type: 'doughnut',
