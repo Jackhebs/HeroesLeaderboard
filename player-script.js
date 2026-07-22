@@ -1,5 +1,4 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
-// Zde si případně uprav gid= na číslo tvé záložky "Zápisy zápasů", pokud ho máš jiné než u hlavního žebříčku
 const MATCHES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=0&single=true&output=csv'; 
 
 async function loadPlayerProfile() {
@@ -70,24 +69,26 @@ async function loadPlayerProfile() {
                 if (!mCols[0]) continue;
                 if (['Datum Zápasu', 'Datum'].includes(mCols[0])) continue; // Přeskočit hlavičku
 
-            // Struktura zápisů: Sloupec B (index 1) = Hráč 1, Sloupec C (index 2) = Hrad 1, atd.
-            // Procházíme dvojice (hráč + hrad) napříč řádkem zápasu
-                for (let colIdx = 1; colIdx < mCols.length - 1; colIdx += 2) {
+                // Procházíme po trojicích: Hráč (colIdx), Hrdina (colIdx + 1), Hrad (colIdx + 2)
+                for (let colIdx = 1; colIdx < mCols.length - 1; colIdx += 3) {
                     const hracVTabulce = mCols[colIdx];
-                    const hradVTabulce = mCols[colIdx + 1];
+                    const hrdinaVTabulce = mCols[colIdx + 1];
+                    const hradVTabulce = mCols[colIdx + 2];
 
                     if (hracVTabulce && hracVTabulce.toLowerCase() === playerName.toLowerCase()) {
                         if (hradVTabulce && hradVTabulce !== '-') {
                             castleCounts[hradVTabulce] = (castleCounts[hradVTabulce] || 0) + 1;
                         }
+                        if (hrdinaVTabulce && hrdinaVTabulce !== '-') {
+                            heroCounts[hrdinaVTabulce] = (heroCounts[hrdinaVTabulce] || 0) + 1;
+                        }
                     }
                 }
 
-                // Mapa je obvykle na konci řádku (např. sloupec L, což odpovídá indexu 11 nebo poslednímu sloupci)
+                // Mapa je na samém konci řádku
                 const mapa = mCols[mCols.length - 1]; 
-                // Zde ověřujeme, jestli se hráč vůbec zúčastnil tohoto zápasu, než mu započítáme mapu
                 let hracBylVZapisu = false;
-                for (let colIdx = 1; colIdx < mCols.length - 1; colIdx += 2) {
+                for (let colIdx = 1; colIdx < mCols.length - 1; colIdx += 3) {
                     if (mCols[colIdx] && mCols[colIdx].toLowerCase() === playerName.toLowerCase()) {
                         hracBylVZapisu = true;
                         break;
@@ -113,7 +114,7 @@ async function loadPlayerProfile() {
         }
 
         const playerCastle = getMostFrequent(castleCounts);
-        const playerHero = '-'; // Pokud budeš chtít doplnit hrdiny do zápisů, dá se to rozšířit stejným způsobem
+        const playerHero = getMostFrequent(heroCounts);
         const playerMap = getMostFrequent(mapCounts);
 
         // 3. Naplnění UI
@@ -155,6 +156,7 @@ async function loadPlayerProfile() {
             <tr><td><strong>Úspěšnost (Winrate)</strong></td><td>${playerData.winrate}</td></tr>
             <tr><td><strong>Celkové body v lize</strong></td><td>${playerData.points}</td></tr>
             <tr><td><strong>Nejčastější hrad</strong></td><td>${playerCastle}</td></tr>
+            <tr><td><strong>Nejčastější hrdina</strong></td><td>${playerHero}</td></tr>
             <tr><td><strong>Nejčastější mapa</strong></td><td>${playerMap}</td></tr>
         `;
 
