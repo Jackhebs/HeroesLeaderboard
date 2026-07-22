@@ -70,6 +70,7 @@ async function loadPlayerProfile() {
                 if (['Datum Zápasu', 'Datum'].includes(mCols[0])) continue; // Přeskočit hlavičku
 
                 // Procházíme po trojicích: Hráč (colIdx), Hrdina (colIdx + 1), Hrad (colIdx + 2)
+                // Končíme před posledním sloupcem, kde je mapa
                 for (let colIdx = 1; colIdx < mCols.length - 1; colIdx += 3) {
                     const hracVTabulce = mCols[colIdx];
                     const hrdinaVTabulce = mCols[colIdx + 1];
@@ -85,7 +86,7 @@ async function loadPlayerProfile() {
                     }
                 }
 
-                // Mapa je na samém konci řádku
+                // Mapa je vždy na úplně posledním sloupci v řádku
                 const mapa = mCols[mCols.length - 1]; 
                 let hracBylVZapisu = false;
                 for (let colIdx = 1; colIdx < mCols.length - 1; colIdx += 3) {
