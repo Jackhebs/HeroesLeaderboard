@@ -1,26 +1,26 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
 
-// Funkce, která vrátí HTML s GIFem monstra podle počtu BODŮ
+// Funkce, která vrátí HTML s GIFem monstra podle počtu BODŮ (včetně záře)
 function getLeagueBadgeByPoints(points) {
-    // 1. Nejvyšší rank: 400 a více bodů
+    // 1. Nejvyšší rank: 400 a více bodů (Zlatá záře)
     if (points >= 400) {
-        return '<img src="images/Creature_Archangel.gif" class="league-icon" title="Liga Archandělů (400+ b.)" alt="Archanděl">';
+        return '<img src="images/Creature_Archangel.gif" class="league-icon glow-gold" title="Liga Archandělů (400+ b.)" alt="Archanděl">';
     } 
-    // 2. 300 až 399 bodů
+    // 2. 300 až 399 bodů (Fialová magická záře)
     else if (points >= 300) {
-        return '<img src="images/Creature_Faerie_Dragon.gif" class="league-icon" title="Pohádková dračí liga (300+ b.)" alt="Pohádkový drak">';
+        return '<img src="images/Creature_Faerie_Dragon.gif" class="league-icon glow-purple" title="Pohádková dračí liga (300+ b.)" alt="Pohádkový drak">';
     }
-    // 3. 200 až 299 bodů
+    // 3. 200 až 299 bodů (Modrá záře)
     else if (points >= 200) {
-        return '<img src="images/Creature_Royal_Griffin.gif" class="league-icon" title="Grifí liga (200+ b.)" alt="Grif">';
+        return '<img src="images/Creature_Royal_Griffin.gif" class="league-icon glow-blue" title="Grifí liga (200+ b.)" alt="Grif">';
     } 
-    // 4. 100 až 199 bodů
+    // 4. 100 až 199 bodů (Stříbrná záře)
     else if (points >= 100) {
-        return '<img src="images/Creature_Pikeman.gif" class="league-icon" title="Kopijnická liga (100+ b.)" alt="Kopijník">';
+        return '<img src="images/Creature_Pikeman.gif" class="league-icon glow-silver" title="Kopijnická liga (100+ b.)" alt="Kopijník">';
     } 
-    // 5. Méně než 100 bodů nebo záporné body
+    // 5. Méně než 100 bodů (Základní stín)
     else {
-        return '<img src="images/Creature_Peasant.gif" class="league-icon" title="Sedlákova liga (<100 b.)" alt="Sedlák">';
+        return '<img src="images/Creature_Peasant.gif" class="league-icon glow-peasant" title="Sedlákova liga (<100 b.)" alt="Sedlák">';
     }
 }
 
