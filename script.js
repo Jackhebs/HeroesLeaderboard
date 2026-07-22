@@ -43,32 +43,59 @@ async function loadLeaderboard() {
         let players = [];
         const delimiter = text.includes(';') ? ';' : ',';
 
-        for (let i = 0; i < lines.length; i++) {
+        // 1. Přečteme hlavičku z prvního řádku CSV
+        const headerCols = lines[0].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim().toUpperCase());
+        console.log('Nalezené hlavičky v tabulce:', headerCols);
+
+        // 2. Dynamicky najdeme pozice sloupců podle klíčových slov
+        let idxName = headerCols.findIndex(c => c.includes('HRÁČ') || c.includes('JMÉNO') || c.includes('NAME') || c.includes('PLAYER'));
+        let idxWins = headerCols.findIndex(c => c.includes('VÝHRY') || c.includes('1ST') || c.includes('VÝHRA'));
+        let idxTop3 = headerCols.findIndex(c => c.includes('BEDNA') || c.includes('TOP 3') || c.includes('TOP3'));
+        let idxGames = headerCols.findIndex(c => c.includes('ZÁPASY') || c.includes('HRY') || c.includes('ZÁPASU') || c.includes('ZÁPAS'));
+        let idxLosses = headerCols.findIndex(c => c.includes('PROHRY') || c.includes('LOSS') || c.includes('PROHRA'));
+        let idxWinrate = headerCols.findIndex(c => c.includes('WINRATE') || c.includes('%') || c.includes('ÚSPĚŠNOST'));
+        let idxPoints = headerCols.findIndex(c => c.includes('BOD') || c.includes('PTS') || c.includes('SCORE'));
+
+        console.Určený_index = { idxName, idxWins, idxTop3, idxGames, idxLosses, idxWinrate, idxPoints };
+
+        // Bezpečnostní pojistka, kdyby nějaký sloupec nenašel, vezme výchozí pořadí
+        if (idxName === -1) idxName = 0;
+        if (idxWins === -1) idxWins = 1;
+        if (idxTop3 === -1) idxTop3 = 2;
+        if (idxGames === -1) idxGames = 3;
+        if (idxLosses === -1) idxLosses = 4;
+        if (idxWinrate === -1) idxWinrate = 5;
+        if (idxPoints === -1) idxPoints = 6;
+
+        let totalGamesFromHeader = 0;
+
+        // 3. Zpracování řádků s daty
+        for (let i = 1; i < lines.length; i++) {
             const cols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim());
 
-            if (!cols[0]) continue;
+            if (!cols[idxName]) continue;
 
-            const name = cols[0];
+            const name = cols[idxName];
 
-            // Přeskočení hlavičky
-            if (['HRÁČ', 'Hráč', 'Jméno', 'NAME', '#'].includes(name)) {
+            // Pokud řádek obsahuje souhrn
+            if (name.toUpperCase().includes('CELKEM') || name.toUpperCase().includes('TOTAL')) {
+                const foundNum = cols.map(c => parseInt(c.replace(/\D/g, ''))).find(n => !isNaN(n) && n > 0);
+                if (foundNum) totalGamesFromHeader = foundNum;
                 continue;
             }
 
-            // NATVRDO PŘIŘAZENÉ INDEXY ZE SHEETS (A=0, B=1, C=2, D=3, E=4, F=5, G=6)
-            const wins = parseInt(cols[1].replace(/\D/g, '')) || 0;
-            const top3 = parseInt(cols[2].replace(/\D/g, '')) || 0;
-            const games = parseInt(cols[3].replace(/\D/g, '')) || 0;
-            const losses = parseInt(cols[4].replace(/\D/g, '')) || 0;
+            const wins = parseInt(cols[idxWins]?.replace(/\D/g, '')) || 0;
+            const top3 = parseInt(cols[idxTop3]?.replace(/\D/g, '')) || 0;
+            const games = parseInt(cols[idxGames]?.replace(/\D/g, '')) || 0;
+            const losses = parseInt(cols[idxLosses]?.replace(/\D/g, '')) || 0;
 
-            let winrate = cols[5] || '0 %';
+            let winrate = cols[idxWinrate] || '0 %';
             if (!winrate.includes('%')) {
                 const num = parseFloat(winrate.replace(',', '.'));
                 winrate = isNaN(num) ? '0 %' : (num <= 1 && num > 0 ? Math.round(num * 100) : Math.round(num)) + ' %';
             }
 
-            // Body ze sloupce G (index 6)
-            const rawPoints = cols[6] || '0';
+            const rawPoints = cols[idxPoints] || '0';
             const points = parseInt(rawPoints.replace(/\D/g, '')) || 0;
 
             players.push({ name, wins, top3, games, losses, winrate, points });
@@ -82,7 +109,7 @@ async function loadLeaderboard() {
         // Řazení podle výher
         players.sort((a, b) => b.wins - a.wins);
 
-        // Vykreslení
+        // Vykreslení tabulky
         players.forEach((p, index) => {
             let rankClass = '';
             let medal = `${index + 1}.`;
@@ -107,14 +134,18 @@ async function loadLeaderboard() {
             tbody.appendChild(tr);
         });
 
-        // 1. Nastavení krále
+        // Nastavení krále
         document.getElementById('top-player').innerText = players[0].name;
 
-        // 2. Nastavení celkových zápasů (nejvyšší odehraný počet z libovolného hráče)
-        const maxGames = Math.max(...players.map(p => p.games));
-        document.getElementById('total-games').innerText = maxGames;
+        // Celkové zápasy
+        const calculatedTotalGames = totalGamesFromHeader > 0 
+            ? totalGamesFromHeader 
+            : Math.max(...players.map(p => p.games));
 
-    } catch (err) {
+        document.getElementById('total-games').innerText = calculatedTotalGames;
+
+    } catc
+    h (err) {
         console.error('Chyba načítání:', err);
         tbody.innerHTML = '<tr><td colspan="8" style="color:#ef4444;">Chyba při načítání CSV dat.</td></tr>';
     }
