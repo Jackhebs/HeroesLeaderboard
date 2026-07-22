@@ -117,7 +117,7 @@ async function loadPlayerProfile() {
             }
         }
 
-        // 3. Vypíšeme detailní tabulku dole
+       // 3. Vypíšeme detailní tabulku dole
         const tbody = document.getElementById('player-details-body');
         tbody.innerHTML = `
             <tr>
@@ -145,6 +145,40 @@ async function loadPlayerProfile() {
                 <td>${playerData.points}</td>
             </tr>
         `;
+
+        // 4. Vykreslení koláčového grafu úspěšnosti (uvnitř try bloku, aby měl přístup k playerData)
+        const ctx = document.getElementById('playerWinChart').getContext('2d');
+        
+        new Chart(ctx, {
+            type: 'doughnut', // Moderní "koblížkový" koláč s dírou uprostřed
+            data: {
+                labels: ['Výhry (1. místo)', 'TOP 3 umístění', 'Prohry'],
+                datasets: [{
+                    data: [playerData.wins, playerData.top3, playerData.losses],
+                    backgroundColor: [
+                        '#10b981', // Zelená pro výhry
+                        '#3b82f6', // Modrá pro top 3
+                        '#ef4444'  // Červená pro prohry
+                    ],
+                    borderWidth: 1,
+                    borderColor: '#1e293b'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#cbd5e1', // Barva textu v legendě pro tmavý motiv
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
     } catch (err) {
         console.error('Chyba při načítání profilu:', err);
