@@ -104,18 +104,21 @@ async function loadPlayerProfile() {
             'tower': 'images/tower.png',
             'inferno': 'images/inferno.gif',
             'necropolis': 'images/necropolis.png',
+            'necropole': 'images/necropolis.png', // Ošetření pro Lucku
             'dungeon': 'images/dungeon.png',
             'stronghold': 'images/stronghold.png',
             'fortress': 'images/fortress.png',
-            'conflux': 'images/conflux.png'
+            'conflux': 'images/conflux.png',
+            'cove': 'images/cove.png',           // <--- Tohle tam dopsat
+            'factory': 'images/factory.png'     // <--- A tohle taky
         };
 
-        // Zobrazení ikonky hradu, pokud název odpovídá slovníku
+       // Zobrazení ikonky hradu, pokud název odpovídá slovníku
         if (castleIconEl && playerCastle !== '-') {
             const castleKey = playerCastle.toLowerCase().trim();
             if (castleImages[castleKey]) {
                 castleIconEl.src = castleImages[castleKey];
-                castleIconEl.style.display = 'inline-block'; // Zobrazí obrázek
+                castleIconEl.style.display = 'inline-block'; // Zviditelní obrázek
             } else {
                 castleIconEl.style.display = 'none'; // Skryje, pokud obrázek není
             }
