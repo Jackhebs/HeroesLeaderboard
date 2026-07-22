@@ -1,4 +1,5 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
+const DETAILS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=2022466520&single=true&output=csv';
 
 async function loadPlayerProfile() {
     const params = new URLSearchParams(window.location.search);
@@ -13,7 +14,11 @@ async function loadPlayerProfile() {
     document.getElementById('player-name').innerText = playerName;
 
     try {
-        const response = await fetch(CSV_URL);
+        const [response, detailsResponse] = await Promise.all([
+            fetch(CSV_URL),
+            fetch(DETAILS_CSV_URL).catch(() => null)
+        ]);
+
         if (!response.ok) throw new Error('Nelze načíst data z tabulky');
 
         const text = await response.text();
@@ -36,16 +41,10 @@ async function loadPlayerProfile() {
                 const games = parseInt(cols[3]) || 0;
                 const losses = parseInt(cols[4]) || 0;
                 let winrate = cols[5] || '0%';
-                
-                // Tady to čteme správně podle tvého obrázku tabulky:
-                const playerCastle = cols[1] || '-'; // Sloupec B (Oblíbený hrad)
-                const playerHero = cols[2] || '-';   // Sloupec C (Hrdina)
-                const playerMap = cols[3] || '-';    // Sloupec D (Nejčastější mapa)
-                
                 const rawPoints = cols[7] || '0';
                 const points = parseInt(rawPoints.replace(/\D/g, '')) || 0;
 
-                playerData = { name, wins, top3, games, losses, winrate, points, playerCastle, playerHero, playerMap };
+                playerData = { name, wins, top3, games, losses, winrate, points };
                 break;
             }
         }
@@ -53,6 +52,31 @@ async function loadPlayerProfile() {
         if (!playerData) {
             document.getElementById('player-details-body').innerHTML = `<tr><td colspan="2" style="color: #ef4444;">Hráč "${playerName}" nebyl v tabulce nalezen.</td></tr>`;
             return;
+        }
+
+        // Zpracování detailů ze záložky Detaily (podle tvého obrázku: sloupec 1=Hrad, 2=Hrdina, 3=Mapa)
+        let playerCastle = '-';
+        let playerHero = '-';
+        let playerMap = '-';
+
+        if (detailsResponse && detailsResponse.ok) {
+            const detailsText = await detailsResponse.text();
+            const detailLines = detailsText.trim().split(/\r?\n/);
+            const detailDelimiter = detailsText.includes(';') ? ';' : ',';
+
+            for (let j = 0; j < detailLines.length; j++) {
+                const dCols = detailLines[j].split(detailDelimiter).map(c => c.replace(/^"|"$/g,'').trim());
+                if (!dCols[0]) continue;
+
+                if (['HRÁČ', 'Hráč', 'Jméno', 'NAME', 'Jméno hráče'].includes(dCols[0])) continue;
+
+                if (dCols[0].toLowerCase() === playerName.toLowerCase()) {
+                    playerCastle = dCols[1] || '-';
+                    playerHero = dCols[2] || '-';
+                    playerMap = dCols[3] || '-';
+                    break;
+                }
+            }
         }
 
         document.getElementById('player-wins').innerText = playerData.wins;
@@ -66,9 +90,9 @@ async function loadPlayerProfile() {
         const heroIconEl = document.getElementById('player-hero-icon');
         const mapEl = document.getElementById('player-map');
 
-        if (castleEl) castleEl.innerText = playerData.playerCastle;
-        if (heroEl) heroEl.innerText = playerData.playerHero;
-        if (mapEl) mapEl.innerText = playerData.playerMap;
+        if (castleEl) castleEl.innerText = playerCastle;
+        if (heroEl) heroEl.innerText = playerHero;
+        if (mapEl) mapEl.innerText = playerMap;
 
         const castleImages = {
             'castle': 'images/castle.png',
@@ -85,8 +109,8 @@ async function loadPlayerProfile() {
             'factory': 'images/factory.png'
         };
 
-        if (castleIconEl && playerData.playerCastle !== '-') {
-            const castleKey = playerData.playerCastle.toLowerCase().trim();
+        if (castleIconEl && playerCastle !== '-') {
+            const castleKey = playerCastle.toLowerCase().trim();
             if (castleImages[castleKey]) {
                 castleIconEl.src = castleImages[castleKey];
                 castleIconEl.style.display = 'inline-block';
@@ -101,8 +125,8 @@ async function loadPlayerProfile() {
             'solmyr': 'images/heroes/solmyr.png'
         };
 
-        if (heroIconEl && playerData.playerHero !== '-') {
-            const heroKey = playerData.playerHero.toLowerCase().trim();
+        if (heroIconEl && playerHero !== '-') {
+            const heroKey = playerHero.toLowerCase().trim();
             if (heroImages[heroKey]) {
                 heroIconEl.src = heroImages[heroKey];
                 heroIconEl.style.display = 'block';
