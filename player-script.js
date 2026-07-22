@@ -1,7 +1,6 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
 
 async function loadPlayerProfile() {
-    // 1. Zjistíme jméno hráče z URL (např. ?name=Béďa)
     const params = new URLSearchParams(window.location.search);
     const playerName = params.get('name');
 
@@ -23,7 +22,6 @@ async function loadPlayerProfile() {
 
         let playerData = null;
 
-        // Projdeme řádky žebříčku
         for (let i = 0; i < lines.length; i++) {
             const cols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g,'').trim());
             
@@ -39,13 +37,12 @@ async function loadPlayerProfile() {
                 const losses = parseInt(cols[4]) || 0;
                 let winrate = cols[5] || '0%';
                 
-                // Zde si zkontroluj čísla sloupců podle své tabulky:
-                // cols[6] = hrad, cols[7] = hrdina, cols[8] = mapa, cols[9] = body
-                const playerCastle = cols[6] || '-';
-                const playerHero = cols[7] || '-';
-                const playerMap = cols[8] || '-';
+                // Tady to čteme správně podle tvého obrázku tabulky:
+                const playerCastle = cols[1] || '-'; // Sloupec B (Oblíbený hrad)
+                const playerHero = cols[2] || '-';   // Sloupec C (Hrdina)
+                const playerMap = cols[3] || '-';    // Sloupec D (Nejčastější mapa)
                 
-                const rawPoints = cols[9] || cols[7] || '0';
+                const rawPoints = cols[7] || '0';
                 const points = parseInt(rawPoints.replace(/\D/g, '')) || 0;
 
                 playerData = { name, wins, top3, games, losses, winrate, points, playerCastle, playerHero, playerMap };
@@ -58,7 +55,6 @@ async function loadPlayerProfile() {
             return;
         }
 
-        // 2. Naplníme horní karty a texty
         document.getElementById('player-wins').innerText = playerData.wins;
         document.getElementById('player-top3').innerText = playerData.top3;
         document.getElementById('player-games').innerText = playerData.games;
@@ -74,7 +70,6 @@ async function loadPlayerProfile() {
         if (heroEl) heroEl.innerText = playerData.playerHero;
         if (mapEl) mapEl.innerText = playerData.playerMap;
 
-        // Slovník pro obrázky hradů
         const castleImages = {
             'castle': 'images/castle.png',
             'rampart': 'images/rampart.png',
@@ -100,7 +95,6 @@ async function loadPlayerProfile() {
             }
         }
 
-        // Slovník pro hrdiny
         const heroImages = {
             'rupert': 'images/heroes/rupert.png',
             'xi': 'images/heroes/xi.png',
@@ -117,7 +111,6 @@ async function loadPlayerProfile() {
             }
         }
 
-        // 3. Vypíšeme detailní tabulku dole
         const tbody = document.getElementById('player-details-body');
         tbody.innerHTML = `
             <tr>
@@ -146,20 +139,14 @@ async function loadPlayerProfile() {
             </tr>
         `;
 
-        // 4. Vykreslení koláčového grafu úspěšnosti
         const ctx = document.getElementById('playerWinChart').getContext('2d');
-        
         new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: ['Výhry (1. místo)', 'TOP 3 umístění', 'Prohry'],
                 datasets: [{
                     data: [playerData.wins, playerData.top3, playerData.losses],
-                    backgroundColor: [
-                        '#10b981', // Zelená pro výhry
-                        '#3b82f6', // Modrá pro top 3
-                        '#ef4444'  // Červená pro prohry
-                    ],
+                    backgroundColor: ['#10b981', '#3b82f6', '#ef4444'],
                     borderWidth: 1,
                     borderColor: '#1e293b'
                 }]
@@ -169,12 +156,7 @@ async function loadPlayerProfile() {
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: {
-                            color: '#cbd5e1',
-                            font: {
-                                size: 12
-                            }
-                        }
+                        labels: { color: '#cbd5e1', font: { size: 12 } }
                     }
                 }
             }
