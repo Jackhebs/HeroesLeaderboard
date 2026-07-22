@@ -2,42 +2,42 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1
 
 function getLeague(points) {
 
-    if (points >= 3000) {
+    if (points >= 1500) {
         return {
             name: "🐉 Legendární liga",
             image: "images/Creature_Azure_Dragon.gif"
         };
     }
 
-    if (points >= 2500) {
+    if (points >= 800) {
         return {
             name: "🪽 Archandělská liga",
             image: "images/Creature_Archangel.gif"
         };
     }
 
-    if (points >= 2000) {
+    if (points >= 500) {
         return {
             name: "✨ Dračí magie",
             image: "images/Creature_Faerie_Dragon.gif"
         };
     }
 
-    if (points >= 1500) {
+    if (points >= 300) {
         return {
             name: "🪓 Monstrózní liga",
             image: "images/Creature_Troll.gif"
         };
     }
 
-    if (points >= 1000) {
+    if (points >= 200) {
         return {
             name: "🦅 Královská liga",
             image: "images/Creature_Royal_Griffin.gif"
         };
     }
 
-    if (points >= 500) {
+    if (points >= 100) {
         return {
             name: "🛡️ Strážcova liga",
             image: "images/Creature_Pikeman.gif"
