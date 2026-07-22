@@ -25,15 +25,15 @@ function getLeague(points) {
 
     if (points >= 300) {
         return {
-            name: "🪓 Monstrózní liga",
-            image: "images/Creature_Troll.gif"
+            name: "🦅 Královská liga",
+            image: "images/Creature_Royal_Griffin.gif"
         };
     }
 
     if (points >= 200) {
         return {
-            name: "🦅 Královská liga",
-            image: "images/Creature_Royal_Griffin.gif"
+            name: "🪓 Monstrózní liga",
+            image: "images/Creature_Troll.gif"
         };
     }
 
