@@ -90,43 +90,43 @@ async function loadPlayerProfile() {
 
         // Naplníme nové detaily (hrad, hrdina, mapa)
         const castleEl = document.getElementById('player-castle');
-        const castleIconEl = document.getElementById('player-castle-icon'); // <--- Ikonka hradu
+        const castleIconEl = document.getElementById('player-castle-icon');
         const heroEl = document.getElementById('player-hero');
+        const heroIconEl = document.getElementById('player-hero-icon'); // Přidáno pro hrdinu
         const mapEl = document.getElementById('player-map');
 
         if (castleEl) castleEl.innerText = playerCastle;
+        if (heroEl) heroEl.innerText = playerHero;
+        if (mapEl) mapEl.innerText = playerMap;
 
         // Slovník pro přiřazení obrázku/gifu podle názvu hradu z tabulky
-        // (uprav si cesty podle toho, kde máš obrázky uložené)
         const castleImages = {
             'castle': 'images/castle.png',
             'rampart': 'images/rampart.png',
             'tower': 'images/tower.png',
             'inferno': 'images/inferno.gif',
             'necropolis': 'images/necropolis.png',
-            'necropole': 'images/necropolis.png', // Ošetření pro Lucku
+            'necropole': 'images/necropolis.png',
             'dungeon': 'images/dungeon.png',
             'stronghold': 'images/stronghold.png',
             'fortress': 'images/fortress.png',
             'conflux': 'images/conflux.png',
-            'cove': 'images/cove.png',           // <--- Tohle tam dopsat
-            'factory': 'images/factory.png'     // <--- A tohle taky
+            'cove': 'images/cove.png',
+            'factory': 'images/factory.png'
         };
 
-       // Zobrazení ikonky hradu, pokud název odpovídá slovníku
+        // Zobrazení ikonky hradu
         if (castleIconEl && playerCastle !== '-') {
             const castleKey = playerCastle.toLowerCase().trim();
             if (castleImages[castleKey]) {
                 castleIconEl.src = castleImages[castleKey];
-                castleIconEl.style.display = 'inline-block'; // Zviditelní obrázek
+                castleIconEl.style.display = 'inline-block';
             } else {
-                castleIconEl.style.display = 'none'; // Skryje, pokud obrázek není
+                castleIconEl.style.display = 'none';
             }
         }
 
-        if (heroEl) heroEl.innerText = playerHero;
-        if (mapEl) mapEl.innerText = playerMap;
-// Slovník pro obrázky hrdinů
+        // Slovník pro obrázky hrdinů (tady si pak doma doplníš další)
         const heroImages = {
             'rupert': 'images/heroes/rupert.png',
             'xi': 'images/heroes/xi.png',
@@ -140,9 +140,10 @@ async function loadPlayerProfile() {
                 heroIconEl.src = heroImages[heroKey];
                 heroIconEl.style.display = 'block';
             } else {
-                heroIconEl.style.display = 'none';
+                heroIconEl.style.display = 'none'; // Dokud obrázek nebude, zůstane skrytý
             }
         }
+
         // 3. Vypíšeme detailní tabulku
         const tbody = document.getElementById('player-details-body');
         tbody.innerHTML = `
