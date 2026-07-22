@@ -39,8 +39,8 @@ async function loadPlayerProfile() {
                 const losses = parseInt(cols[4]) || 0;
                 let winrate = cols[5] || '0%';
                 
-                // Tady si uprav podle toho, v jakém sloupci v té tabulce máš hrad, hrdinu a mapu:
-                // cols[6] = hrad, cols[7] = hrdina, cols[8] = mapa, cols[9] = body (případně si čísla uprav podle své tabulky)
+                // Zde si zkontroluj čísla sloupců podle své tabulky:
+                // cols[6] = hrad, cols[7] = hrdina, cols[8] = mapa, cols[9] = body
                 const playerCastle = cols[6] || '-';
                 const playerHero = cols[7] || '-';
                 const playerMap = cols[8] || '-';
@@ -100,7 +100,7 @@ async function loadPlayerProfile() {
             }
         }
 
-        // Slovník pro hrdiny (zatím prázdný, doplníš doma)
+        // Slovník pro hrdiny
         const heroImages = {
             'rupert': 'images/heroes/rupert.png',
             'xi': 'images/heroes/xi.png',
@@ -117,7 +117,7 @@ async function loadPlayerProfile() {
             }
         }
 
-       // 3. Vypíšeme detailní tabulku dole
+        // 3. Vypíšeme detailní tabulku dole
         const tbody = document.getElementById('player-details-body');
         tbody.innerHTML = `
             <tr>
@@ -146,11 +146,11 @@ async function loadPlayerProfile() {
             </tr>
         `;
 
-        // 4. Vykreslení koláčového grafu úspěšnosti (uvnitř try bloku, aby měl přístup k playerData)
+        // 4. Vykreslení koláčového grafu úspěšnosti
         const ctx = document.getElementById('playerWinChart').getContext('2d');
         
         new Chart(ctx, {
-            type: 'doughnut', // Moderní "koblížkový" koláč s dírou uprostřed
+            type: 'doughnut',
             data: {
                 labels: ['Výhry (1. místo)', 'TOP 3 umístění', 'Prohry'],
                 datasets: [{
@@ -170,7 +170,7 @@ async function loadPlayerProfile() {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: '#cbd5e1', // Barva textu v legendě pro tmavý motiv
+                            color: '#cbd5e1',
                             font: {
                                 size: 12
                             }
