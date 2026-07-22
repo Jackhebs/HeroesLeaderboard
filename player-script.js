@@ -2,6 +2,7 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1
 const DETAILS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=2022466520&single=true&output=csv';
 
 async function loadPlayerProfile() {
+    // 1. Zjistíme jméno hráče z URL (např. ?name=Honza)
     const params = new URLSearchParams(window.location.search);
     const playerName = params.get('name');
 
@@ -14,6 +15,7 @@ async function loadPlayerProfile() {
     document.getElementById('player-name').innerText = playerName;
 
     try {
+        // Stáhneme hlavní žebříček i detaily současně
         const [response, detailsResponse] = await Promise.all([
             fetch(CSV_URL),
             fetch(DETAILS_CSV_URL).catch(() => null)
@@ -27,7 +29,7 @@ async function loadPlayerProfile() {
 
         let playerData = null;
 
-        // 1. Zpracování hlavního žebříčku (body, výhry, zápasy)
+        // Projdeme řádky hlavního žebříčku
         for (let i = 0; i < lines.length; i++) {
             const cols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g,'').trim());
             
@@ -55,7 +57,7 @@ async function loadPlayerProfile() {
             return;
         }
 
-        // 2. Zpracování detailů ze záložky Detaily (správné sloupce B, C, D)
+        // Zpracování detailů (Hrad, Hrdina, Mapa) ze záložky "Detaily"
         let playerCastle = '-';
         let playerHero = '-';
         let playerMap = '-';
@@ -72,74 +74,60 @@ async function loadPlayerProfile() {
                 if (['HRÁČ', 'Hráč', 'Jméno', 'NAME', 'Jméno hráče'].includes(dCols[0])) continue;
 
                 if (dCols[0].toLowerCase() === playerName.toLowerCase()) {
-                    playerCastle = dCols[1] || '-'; // Sloupec B
-                    playerHero = dCols[2] || '-';   // Sloupec C
-                    playerMap = dCols[3] || '-';    // Sloupec D
+                    playerCastle = dCols[1] || '-';
+                    playerHero = dCols[2] || '-';
+                    playerMap = dCols[3] || '-';
                     break;
                 }
             }
         }
 
-        // Naplnění horních karet statistik
+        // 2. Naplníme karty základními hodnotami
         document.getElementById('player-wins').innerText = playerData.wins;
         document.getElementById('player-top3').innerText = playerData.top3;
         document.getElementById('player-games').innerText = playerData.games;
         document.getElementById('player-points').innerText = playerData.points + ' b';
 
-        // Naplnění textů detailů
+        // Naplníme nové detaily (hrad, hrdina, mapa)
         const castleEl = document.getElementById('player-castle');
-        const castleIconEl = document.getElementById('player-castle-icon');
+        const castleIconEl = document.getElementById('player-castle-icon'); // <--- Ikonka hradu
         const heroEl = document.getElementById('player-hero');
-        const heroIconEl = document.getElementById('player-hero-icon');
         const mapEl = document.getElementById('player-map');
 
         if (castleEl) castleEl.innerText = playerCastle;
-        if (heroEl) heroEl.innerText = playerHero;
-        if (mapEl) mapEl.innerText = playerMap;
 
-        // Slovníky pro obrázky
+        // Slovník pro přiřazení obrázku/gifu podle názvu hradu z tabulky
+        // (uprav si cesty podle toho, kde máš obrázky uložené)
         const castleImages = {
             'castle': 'images/castle.png',
             'rampart': 'images/rampart.png',
             'tower': 'images/tower.png',
             'inferno': 'images/inferno.gif',
             'necropolis': 'images/necropolis.png',
-            'necropole': 'images/necropolis.png',
+            'necropole': 'images/necropolis.png', // Ošetření pro Lucku
             'dungeon': 'images/dungeon.png',
             'stronghold': 'images/stronghold.png',
             'fortress': 'images/fortress.png',
             'conflux': 'images/conflux.png',
-            'cove': 'images/cove.png',
-            'factory': 'images/factory.png'
+            'cove': 'images/cove.png',           // <--- Tohle tam dopsat
+            'factory': 'images/factory.png'     // <--- A tohle taky
         };
 
+       // Zobrazení ikonky hradu, pokud název odpovídá slovníku
         if (castleIconEl && playerCastle !== '-') {
             const castleKey = playerCastle.toLowerCase().trim();
             if (castleImages[castleKey]) {
                 castleIconEl.src = castleImages[castleKey];
-                castleIconEl.style.display = 'inline-block';
+                castleIconEl.style.display = 'inline-block'; // Zviditelní obrázek
             } else {
-                castleIconEl.style.display = 'none';
+                castleIconEl.style.display = 'none'; // Skryje, pokud obrázek není
             }
         }
 
-        const heroImages = {
-            'rupert': 'images/heroes/rupert.png',
-            'xi': 'images/heroes/xi.png',
-            'solmyr': 'images/heroes/solmyr.png'
-        };
+        if (heroEl) heroEl.innerText = playerHero;
+        if (mapEl) mapEl.innerText = playerMap;
 
-        if (heroIconEl && playerHero !== '-') {
-            const heroKey = playerHero.toLowerCase().trim();
-            if (heroImages[heroKey]) {
-                heroIconEl.src = heroImages[heroKey];
-                heroIconEl.style.display = 'block';
-            } else {
-                heroIconEl.style.display = 'none';
-            }
-        }
-
-        // 3. Vypíšeme detailní tabulku dole
+        // 3. Vypíšeme detailní tabulku
         const tbody = document.getElementById('player-details-body');
         tbody.innerHTML = `
             <tr>
@@ -167,30 +155,6 @@ async function loadPlayerProfile() {
                 <td>${playerData.points}</td>
             </tr>
         `;
-
-        // 4. Vykreslení grafu
-        const ctx = document.getElementById('playerWinChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Výhry (1. místo)', 'TOP 3 umístění', 'Prohry'],
-                datasets: [{
-                    data: [playerData.wins, playerData.top3, playerData.losses],
-                    backgroundColor: ['#10b981', '#3b82f6', '#ef4444'],
-                    borderWidth: 1,
-                    borderColor: '#1e293b'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#cbd5e1', font: { size: 12 } }
-                    }
-                }
-            }
-        });
 
     } catch (err) {
         console.error('Chyba při načítání profilu:', err);
