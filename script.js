@@ -153,9 +153,14 @@ async function loadLeaderboard() {
             return;
         }
 
-        players.sort(
-            (a,b)=> b.wins - a.wins
-        );
+       players.sort((a, b) => {
+            // Nejprve seřadíme podle bodů od největšího po nejmenší
+            if (b.points !== a.points) {
+                return b.points - a.points;
+            }
+            // Pokud mají stejný počet bodů, rozhodují výhry
+            return b.wins - a.wins;
+        });
 
         players.forEach((p,index)=>{
 
