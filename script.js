@@ -224,16 +224,11 @@ async function loadLeaderboard() {
 
 
 
-        const totalGames =
-            players.reduce(
-                (sum,p)=>sum+p.games,
-                0
-            );
+      // Místo sčítání (reduce) vezmeme maximální počet zápasů z tabulky
+const totalGames = Math.max(...players.map(p => p.games));
 
-
-
-        document.getElementById('total-games').innerText =
-            totalGames;
+document.getElementById('total-games').innerText =
+    totalGames;
 
 
 
