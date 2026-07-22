@@ -385,36 +385,56 @@ body {
 
 
 .table-wrapper {
-
-    overflow-x:auto;
-
+    overflow-x: auto;
 }
-
-
 
 table {
-
-    min-width:650px;
-
+    min-width: 650px;
 }
-
-
 
 th, td {
-
-    padding:8px;
-
-    font-size:.8rem;
-
+    padding: 8px;
+    font-size: .8rem;
 }
-
-
 
 .leaderboard-title {
-
-    font-size:1.1rem;
-
+    font-size: 1.1rem;
 }
 
+/* Základní styl pro všechny ikony + zvětšení při hoveru */
+.league-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    vertical-align: middle;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
 
+.league-icon:hover {
+    transform: scale(1.3);
+}
+
+/* 1. Archanděl / 400+ b. -> Zlatá záře */
+.glow-gold {
+    filter: drop-shadow(0 0 6px #ffd700) drop-shadow(0 0 12px #ffa500);
+}
+
+/* 2. Kouzelný drak / 300+ b. -> Magická fialovo-růžová záře */
+.glow-purple {
+    filter: drop-shadow(0 0 6px #d8b4fe) drop-shadow(0 0 12px #a855f7);
+}
+
+/* 3. Královský grif / 200+ b. -> Královská modrá záře */
+.glow-blue {
+    filter: drop-shadow(0 0 6px #38bdf8) drop-shadow(0 0 12px #0284c7);
+}
+
+/* 4. Kopijník / 100+ b. -> Ocelově stříbrná záře */
+.glow-silver {
+    filter: drop-shadow(0 0 5px #cbd5e1) drop-shadow(0 0 10px #94a3b8);
+}
+
+/* 5. Sedlák / <100 b. -> Jemný temný stín bez výrazné záře */
+.glow-peasant {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
 }
