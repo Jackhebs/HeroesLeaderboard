@@ -150,10 +150,8 @@ async function loadLeaderboard() {
 
 
 
-const points =
-    (wins * 100)
-    - (losses * 50)
-    + (top3 * 25);
+const rawPoints = cols[6] || '0'; // nebo podle indexu tvého sloupce Body
+const points = parseInt(rawPoints.replace(/\D/g, '')) || 0;
 
 
 const league = getLeague(points);
