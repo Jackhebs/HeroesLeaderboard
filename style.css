@@ -190,8 +190,15 @@ body {
     margin-bottom:15px;
 
 }
-
-
+ 
+/* Třída pro animované GIFy lig v tabulce */
+.league-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    vertical-align: middle;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
 
 .table-wrapper {
 
