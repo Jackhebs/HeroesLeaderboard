@@ -2,19 +2,25 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1
 
 // Funkce, která vrátí HTML s GIFem monstra podle počtu BODŮ
 function getLeagueBadgeByPoints(points) {
-    // Tady si nastav hranice bodů a názvy GIFů podle sebe:
-    if (points >= 300) {
-        return '<img src="images/archangel.gif" class="league-icon" title="Liga Archandělů (300+ b.)" alt="Archanděl">';
+    // 1. Nejvyšší rank: 400 a více bodů
+    if (points >= 400) {
+        return '<img src="images/Creature_Archangel.gif" class="league-icon" title="Liga Archandělů (400+ b.)" alt="Archanděl">';
     } 
+    // 2. 300 až 399 bodů
+    else if (points >= 300) {
+        return '<img src="images/Creature_Faerie_Dragon.gif" class="league-icon" title="Pohádková dračí liga (300+ b.)" alt="Pohádkový drak">';
+    }
+    // 3. 200 až 299 bodů
     else if (points >= 200) {
-        return '<img src="images/black_dragon.gif" class="league-icon" title="Dračí liga (200+ b.)" alt="Černý drak">';
+        return '<img src="images/Creature_Royal_Griffin.gif" class="league-icon" title="Grifí liga (200+ b.)" alt="Grif">';
     } 
+    // 4. 100 až 199 bodů
     else if (points >= 100) {
-        return '<img src="images/champion.gif" class="league-icon" title="Rytířská liga (100+ b.)" alt="Rytíř">';
+        return '<img src="images/Creature_Pikeman.gif" class="league-icon" title="Kopijnická liga (100+ b.)" alt="Kopijník">';
     } 
+    // 5. Méně než 100 bodů nebo záporné body
     else {
-        // Měně než 100 bodů nebo záporné body
-        return '<img src="images/peasant.gif" class="league-icon" title="Sedlákova liga (<100 b.)" alt="Sedlák">';
+        return '<img src="images/Creature_Peasant.gif" class="league-icon" title="Sedlákova liga (<100 b.)" alt="Sedlák">';
     }
 }
 
