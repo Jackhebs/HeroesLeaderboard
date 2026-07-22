@@ -15,7 +15,7 @@ async function loadPlayerProfile() {
     document.getElementById('player-name').innerText = playerName;
 
     try {
-        // Stáhneme hlavní žebříček i detaily současně
+        // Stáhneme hlavní tabulku i detaily současně
         const [response, detailsResponse] = await Promise.all([
             fetch(CSV_URL),
             fetch(DETAILS_CSV_URL).catch(() => null)
@@ -36,6 +36,7 @@ async function loadPlayerProfile() {
             if (!cols[0]) continue;
             const name = cols[0];
 
+            // Přeskočíme hlavičku tabulky
             if (['HRÁČ', 'Hráč', 'Jméno', 'NAME', '#'].includes(name)) continue;
 
             if (name.toLowerCase() === playerName.toLowerCase()) {
@@ -57,7 +58,7 @@ async function loadPlayerProfile() {
             return;
         }
 
-        // Zpracování detailů (Hrad, Hrdina, Mapa) ze záložky "Detaily"
+        // Zpracování detailů (Oblíbený hrad, Hrdina, Mapa) ze záložky "Detaily"
         let playerCastle = '-';
         let playerHero = '-';
         let playerMap = '-';
@@ -71,6 +72,7 @@ async function loadPlayerProfile() {
                 const dCols = detailLines[j].split(detailDelimiter).map(c => c.replace(/^"|"$/g,'').trim());
                 if (!dCols[0]) continue;
 
+                // Přeskočíme hlavičku v detailech
                 if (['HRÁČ', 'Hráč', 'Jméno', 'NAME', 'Jméno hráče'].includes(dCols[0])) continue;
 
                 if (dCols[0].toLowerCase() === playerName.toLowerCase()) {
@@ -82,48 +84,18 @@ async function loadPlayerProfile() {
             }
         }
 
-        // 2. Naplníme karty základními hodnotami
+        // 2. Naplníme karty hodnotami (základní statistiky)
         document.getElementById('player-wins').innerText = playerData.wins;
         document.getElementById('player-top3').innerText = playerData.top3;
         document.getElementById('player-games').innerText = playerData.games;
         document.getElementById('player-points').innerText = playerData.points + ' b';
 
-        // Naplníme nové detaily (hrad, hrdina, mapa)
+        // Naplníme nové detaily (hrad, hrdina, mapa) do HTML elementů
         const castleEl = document.getElementById('player-castle');
-        const castleIconEl = document.getElementById('player-castle-icon'); // <--- Ikonka hradu
         const heroEl = document.getElementById('player-hero');
         const mapEl = document.getElementById('player-map');
 
         if (castleEl) castleEl.innerText = playerCastle;
-
-        // Slovník pro přiřazení obrázku/gifu podle názvu hradu z tabulky
-        // (uprav si cesty podle toho, kde máš obrázky uložené)
-        const castleImages = {
-            'castle': 'images/castle.png',
-            'rampart': 'images/rampart.png',
-            'tower': 'images/tower.png',
-            'inferno': 'images/inferno.gif',
-            'necropolis': 'images/necropolis.png',
-            'necropole': 'images/necropolis.png', // Ošetření pro Lucku
-            'dungeon': 'images/dungeon.png',
-            'stronghold': 'images/stronghold.png',
-            'fortress': 'images/fortress.png',
-            'conflux': 'images/conflux.png',
-            'cove': 'images/cove.png',           // <--- Tohle tam dopsat
-            'factory': 'images/factory.png'     // <--- A tohle taky
-        };
-
-       // Zobrazení ikonky hradu, pokud název odpovídá slovníku
-        if (castleIconEl && playerCastle !== '-') {
-            const castleKey = playerCastle.toLowerCase().trim();
-            if (castleImages[castleKey]) {
-                castleIconEl.src = castleImages[castleKey];
-                castleIconEl.style.display = 'inline-block'; // Zviditelní obrázek
-            } else {
-                castleIconEl.style.display = 'none'; // Skryje, pokud obrázek není
-            }
-        }
-
         if (heroEl) heroEl.innerText = playerHero;
         if (mapEl) mapEl.innerText = playerMap;
 
