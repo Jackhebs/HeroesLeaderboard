@@ -126,7 +126,23 @@ async function loadPlayerProfile() {
 
         if (heroEl) heroEl.innerText = playerHero;
         if (mapEl) mapEl.innerText = playerMap;
+// Slovník pro obrázky hrdinů
+        const heroImages = {
+            'rupert': 'images/heroes/rupert.png',
+            'xi': 'images/heroes/xi.png',
+            'solmyr': 'images/heroes/solmyr.png'
+        };
 
+        // Zobrazení velké ikonky hrdiny
+        if (heroIconEl && playerHero !== '-') {
+            const heroKey = playerHero.toLowerCase().trim();
+            if (heroImages[heroKey]) {
+                heroIconEl.src = heroImages[heroKey];
+                heroIconEl.style.display = 'block';
+            } else {
+                heroIconEl.style.display = 'none';
+            }
+        }
         // 3. Vypíšeme detailní tabulku
         const tbody = document.getElementById('player-details-body');
         tbody.innerHTML = `
