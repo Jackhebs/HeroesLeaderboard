@@ -2,20 +2,22 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1
 
 // Funkce, která vrátí HTML s GIFem monstra podle počtu BODŮ (včetně záře)
 function getLeagueBadgeByPoints(points) {
+    const pts = Number(points) || 0;
+
     // 1. Nejvyšší rank: 400 a více bodů (Zlatá záře)
-    if (points >= 400) {
+    if (pts >= 400) {
         return '<img src="images/Creature_Archangel.gif" class="league-icon glow-gold" title="Liga Archandělů (400+ b.)" alt="Archanděl">';
     } 
     // 2. 300 až 399 bodů (Fialová magická záře)
-    else if (points >= 300) {
+    else if (pts >= 300) {
         return '<img src="images/Creature_Faerie_Dragon.gif" class="league-icon glow-purple" title="Pohádková dračí liga (300+ b.)" alt="Pohádkový drak">';
     }
     // 3. 200 až 299 bodů (Modrá záře)
-    else if (points >= 200) {
+    else if (pts >= 200) {
         return '<img src="images/Creature_Royal_Griffin.gif" class="league-icon glow-blue" title="Grifí liga (200+ b.)" alt="Grif">';
     } 
     // 4. 100 až 199 bodů (Stříbrná záře)
-    else if (points >= 100) {
+    else if (pts >= 100) {
         return '<img src="images/Creature_Pikeman.gif" class="league-icon glow-silver" title="Kopijnická liga (100+ b.)" alt="Kopijník">';
     } 
     // 5. Méně než 100 bodů (Základní stín)
@@ -68,8 +70,9 @@ async function loadLeaderboard() {
                     : (num <= 1 && num > 0 ? Math.round(num * 100) : Math.round(num)) + ' %';
             }
 
-            // NAČTENÍ BODŮ ze 7. sloupce (index 6)
-            const points = parseInt(cols[6]) || 0;
+            // NAČTENÍ BODŮ ze 7. sloupce (index 6) + odstranění mezer (např. z "1 200" na "1200")
+            const rawPoints = cols[6] ? cols[6].replace(/\s+/g, '').replace(',', '.') : '0';
+            const points = parseInt(rawPoints) || 0;
 
             players.push({
                 name,
@@ -93,64 +96,64 @@ async function loadLeaderboard() {
             return;
         }
 
-      players.sort((a,b) => b.wins - a.wins);
+        players.sort((a,b) => b.wins - a.wins);
 
-players.forEach((p, index) => {
-    let rankClass = '';
-    let medal = `${index+1}.`;
+        players.forEach((p, index) => {
+            let rankClass = '';
+            let medal = `${index+1}.`;
 
-    if (index === 0) {
-        rankClass = 'rank-1';
-        medal = '🥇 1.';
-    } else if (index === 1) {
-        rankClass = 'rank-2';
-        medal = '🥈 2.';
-    } else if (index === 2) {
-        rankClass = 'rank-3';
-        medal = '🥉 3.';
-    }
+            if (index === 0) {
+                rankClass = 'rank-1';
+                medal = '🥇 1.';
+            } else if (index === 1) {
+                rankClass = 'rank-2';
+                medal = '🥈 2.';
+            } else if (index === 2) {
+                rankClass = 'rank-3';
+                medal = '🥉 3.';
+            }
 
-    // Získání GIFu na základě bodů
-    const badgeHtml = getLeagueBadgeByPoints(p.points);
+            // Získání GIFu na základě bodů
+            const badgeHtml = getLeagueBadgeByPoints(p.points);
 
-    const tr = document.createElement('tr');
+            const tr = document.createElement('tr');
 
-    tr.innerHTML = `
-    <td class="${rankClass}">
-        ${medal}
-    </td>
-    <td>
-        <strong>${p.name}</strong>
-    </td>
-    <td>
-        ${p.wins}
-    </td>
-    <td>
-        ${p.top3}
-    </td>
-    <td>
-        ${p.games}
-    </td>
-    <td>
-        ${p.losses}
-    </td>
-    <td>
-        <span class="badge-winrate">
-            ${p.winrate}
-        </span>
-    </td>
-    <td>
-        ${badgeHtml}
-    </td>
-    `;
+            tr.innerHTML = `
+            <td class="${rankClass}">
+                ${medal}
+            </td>
+            <td>
+                <strong>${p.name}</strong>
+            </td>
+            <td>
+                ${p.wins}
+            </td>
+            <td>
+                ${p.top3}
+            </td>
+            <td>
+                ${p.games}
+            </td>
+            <td>
+                ${p.losses}
+            </td>
+            <td>
+                <span class="badge-winrate">
+                    ${p.winrate}
+                </span>
+            </td>
+            <td>
+                ${badgeHtml}
+            </td>
+            `;
 
-    tbody.appendChild(tr);
-});
+            tbody.appendChild(tr);
+        });
 
         document.getElementById('top-player').innerText = players[0].name;
 
-        // Správný výpočet celkového počtu zápasů
-        const totalGames = Math.max(...players.map(p => p.games));
+        // Součet všech odehraných zápasů
+        const totalGames = players.reduce((sum, p) => sum + p.games, 0);
         document.getElementById('total-games').innerText = totalGames;
 
     } catch(err) {
