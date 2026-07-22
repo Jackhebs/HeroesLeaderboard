@@ -1,7 +1,6 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
 
-// Přesné hranice podle tvého vzorce z Google Sheets:
-// =KDYŽ(G2>=3000;"Legendární"; KDYŽ(G2>=2500;"Archandělská"; KDYŽ(G2>=2000;"Dračí magie"; ...)))
+// Výběr ikony podle bodů (přesně podle tvého vzorce v Google Sheets)
 function getLeagueBadgeByPoints(points) {
     const pts = Number(points) || 0;
 
@@ -43,6 +42,7 @@ async function loadLeaderboard() {
 
         tbody.innerHTML = '';
         let players = [];
+        let totalGamesFromSheet = null;
         const delimiter = text.includes(';') ? ';' : ',';
 
         for (let i = 0; i < lines.length; i++) {
@@ -73,10 +73,18 @@ async function loadLeaderboard() {
                     : (num <= 1 && num > 0 ? Math.round(num * 100) : Math.round(num)) + ' %';
             }
 
-            // NAČTENÍ BODŮ ze 7. sloupce (G = index 6)
-            // Odstranění mezer a teček u tisíců (např. z "2 500" udělá "2500")
+            // NAČTENÍ BODŮ ze sloupce G (index 6)
+            // DŮLEŽITÉ: Vyčištění mezer (z "2 500" na "2500"), teček i čárek
             const rawPoints = cols[6] ? cols[6].replace(/\s+/g, '').replace(/\./g, '').replace(',', '.') : '0';
             const points = parseInt(rawPoints) || 0;
+
+            // Pokus o přečtení celkového počtu zápasů ze sloupce J (index 9) v 1. řádku s daty
+            if (totalGamesFromSheet === null && cols[9]) {
+                const parsedTotal = parseInt(cols[9].replace(/\s+/g, ''));
+                if (!isNaN(parsedTotal) && parsedTotal > 0) {
+                    totalGamesFromSheet = parsedTotal;
+                }
+            }
 
             players.push({
                 name,
@@ -97,7 +105,7 @@ async function loadLeaderboard() {
         // Řazení podle výher
         players.sort((a, b) => b.wins - a.wins);
 
-        // Vykreslení do tabulky
+        // Vykreslení hráčů do tabulky
         players.forEach((p, index) => {
             let rankClass = '';
             let medal = `${index + 1}.`;
@@ -131,12 +139,15 @@ async function loadLeaderboard() {
             tbody.appendChild(tr);
         });
 
-        // Král tabulky
+        // 1. Nastavení krále
         document.getElementById('top-player').innerText = players[0].name;
 
-        // Celkem odehraných zápasů (nejvyšší odehrané číslo z hráčů, např. 2 místo 17)
-        const maxGames = Math.max(...players.map(p => p.games));
-        document.getElementById('total-games').innerText = maxGames;
+        // 2. Nastavení celkového počtu odehraných zápasů (pokud je v buňce J2, vezme ji; jinak vezme reálnou hodnotu)
+        const finalTotalGames = totalGamesFromSheet !== null 
+            ? totalGamesFromSheet 
+            : Math.max(...players.map(p => p.games));
+
+        document.getElementById('total-games').innerText = finalTotalGames;
 
     } catch (err) {
         console.error('Chyba načítání:', err);
