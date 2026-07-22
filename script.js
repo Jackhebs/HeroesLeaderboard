@@ -30,7 +30,7 @@ async function loadLeaderboard() {
     const tbody = document.getElementById('leaderboard-body');
 
     try {
-        const response = await fetch(CSV_URL + '&_t=' + new Date().getTime()); // Zabránění mezipaměti
+        const response = await fetch(CSV_URL + '&_t=' + new Date().getTime());
 
         if (!response.ok) {
             throw new Error('Nelze načíst data ze serveru');
@@ -43,7 +43,7 @@ async function loadLeaderboard() {
         let players = [];
         const delimiter = text.includes(';') ? ';' : ',';
 
-        // 1. Zjištění indexů sloupců z hlavičky
+        // Dynamické zjištění indexů podle hlavičky
         const headerCols = lines[0].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim().toUpperCase());
         
         let idxName = headerCols.findIndex(c => c.includes('HRÁČ') || c.includes('JMÉNO') || c.includes('NAME'));
@@ -54,14 +54,14 @@ async function loadLeaderboard() {
         let idxWinrate = headerCols.findIndex(c => c.includes('WINRATE') || c.includes('%'));
         let idxPoints = headerCols.findIndex(c => c.includes('BOD') || c.includes('PTS'));
 
-        // Fallbacky, pokud hlavička neodpovídá přesně
+        // Bezpečnostní záloha indexů (0 až 6)
         if (idxName === -1) idxName = 0;
         if (idxWins === -1) idxWins = 1;
         if (idxTop3 === -1) idxTop3 = 2;
         if (idxGames === -1) idxGames = 3;
         if (idxLosses === -1) idxLosses = 4;
         if (idxWinrate === -1) idxWinrate = 5;
-        if (idxPoints === -1) idxPoints = 6; // Sloupec G
+        if (idxPoints === -1) idxPoints = 6;
 
         let totalGamesFromHeader = 0;
 
@@ -72,7 +72,7 @@ async function loadLeaderboard() {
 
             const name = cols[idxName];
 
-            // Pokud řádek obsahuje "CELKEM ZÁPASŮ" nebo podobný souhrn
+            // Pokud řádek uvádí celkový souhrn zápasů
             if (name.toUpperCase().includes('CELKEM') || name.toUpperCase().includes('TOTAL')) {
                 const foundNum = cols.map(c => parseInt(c.replace(/\D/g, ''))).find(n => !isNaN(n) && n > 0);
                 if (foundNum) totalGamesFromHeader = foundNum;
@@ -90,15 +90,13 @@ async function loadLeaderboard() {
                 winrate = isNaN(num) ? '0 %' : (num <= 1 && num > 0 ? Math.round(num * 100) : Math.round(num)) + ' %';
             }
 
-            // Očištění BODŮ ode všech nečíselných znaků (kromě číslic)
+            // Očištění bodů (vymaže všechny nečíselné znaky)
             const rawPoints = cols[idxPoints] || '0';
-            const cleanPoints = rawPoints.replace(/\D/g, ''); // Vymaže mezery, tečky, text
+            const cleanPoints = rawPoints.replace(/\D/g, ''); 
             const points = parseInt(cleanPoints) || 0;
 
             players.push({ name, wins, top3, games, losses, winrate, points });
         }
-
-        console.log('Načtení hráči a jejich body:', players); // Zkontroluj v F12 -> Console
 
         if (players.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8">Žádní hráči v tabulce.</td></tr>';
@@ -108,7 +106,7 @@ async function loadLeaderboard() {
         // Řazení podle výher
         players.sort((a, b) => b.wins - a.wins);
 
-        // Vykreslení
+        // Vykreslení tabulky
         players.forEach((p, index) => {
             let rankClass = '';
             let medal = `${index + 1}.`;
@@ -136,17 +134,16 @@ async function loadLeaderboard() {
         // 1. Nastavení krále
         document.getElementById('top-player').innerText = players[0].name;
 
-        // 2. Nastavení celkového počtu odehraných zápasů
-        // Pokud skript nenašel samostatný řádek s celkovými zápasy, spočítá unikátní součet výher + remíz/proher skupiny
+        // 2. Nastavení celkových zápasů
         const calculatedTotalGames = totalGamesFromHeader > 0 
             ? totalGamesFromHeader 
-            : Math.max(...players.map(p => p.wins)); // Případně upravíme podle toho, co napíše konzole
+            : players.reduce((sum, p) => sum + p.wins, 0);
 
         document.getElementById('total-games').innerText = calculatedTotalGames;
 
     } catch (err) {
         console.error('Chyba načítání:', err);
-        tbody.innerHTML = '<tr><td colspan="8" style="color:#ef4444;">Chyba při načítání CSV dat. Podívej se do F12 (Console).</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="color:#ef4444;">Chyba při načítání CSV dat.</td></tr>';
     }
 }
 
