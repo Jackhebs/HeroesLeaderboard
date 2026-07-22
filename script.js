@@ -45,7 +45,6 @@ async function loadLeaderboard() {
 
         // 1. Přečteme hlavičku z prvního řádku CSV
         const headerCols = lines[0].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim().toUpperCase());
-        console.log('Nalezené hlavičky v tabulce:', headerCols);
 
         // 2. Dynamicky najdeme pozice sloupců podle klíčových slov
         let idxName = headerCols.findIndex(c => c.includes('HRÁČ') || c.includes('JMÉNO') || c.includes('NAME') || c.includes('PLAYER'));
@@ -56,9 +55,7 @@ async function loadLeaderboard() {
         let idxWinrate = headerCols.findIndex(c => c.includes('WINRATE') || c.includes('%') || c.includes('ÚSPĚŠNOST'));
         let idxPoints = headerCols.findIndex(c => c.includes('BOD') || c.includes('PTS') || c.includes('SCORE'));
 
-        console.Určený_index = { idxName, idxWins, idxTop3, idxGames, idxLosses, idxWinrate, idxPoints };
-
-        // Bezpečnostní pojistka, kdyby nějaký sloupec nenašel, vezme výchozí pořadí
+        // Bezpečnostní pojistka
         if (idxName === -1) idxName = 0;
         if (idxWins === -1) idxWins = 1;
         if (idxTop3 === -1) idxTop3 = 2;
@@ -77,7 +74,6 @@ async function loadLeaderboard() {
 
             const name = cols[idxName];
 
-            // Pokud řádek obsahuje souhrn
             if (name.toUpperCase().includes('CELKEM') || name.toUpperCase().includes('TOTAL')) {
                 const foundNum = cols.map(c => parseInt(c.replace(/\D/g, ''))).find(n => !isNaN(n) && n > 0);
                 if (foundNum) totalGamesFromHeader = foundNum;
@@ -144,8 +140,7 @@ async function loadLeaderboard() {
 
         document.getElementById('total-games').innerText = calculatedTotalGames;
 
-    } catc
-    h (err) {
+    } catch (err) {
         console.error('Chyba načítání:', err);
         tbody.innerHTML = '<tr><td colspan="8" style="color:#ef4444;">Chyba při načítání CSV dat.</td></tr>';
     }
