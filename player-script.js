@@ -94,10 +94,28 @@ async function loadPlayerProfile() {
         const castleEl = document.getElementById('player-castle');
         const heroEl = document.getElementById('player-hero');
         const mapEl = document.getElementById('player-map');
+        const castleImgEl = document.getElementById('player-castle-img');
 
         if (castleEl) castleEl.innerText = playerCastle;
         if (heroEl) heroEl.innerText = playerHero;
         if (mapEl) mapEl.innerText = playerMap;
+
+        // Dynamické načtení obrázku hradu podle názvu v tabulce
+        if (castleImgEl) {
+            if (playerCastle && playerCastle !== '-') {
+                // Převede např. "Necropole" na "necropole.png" ve složce images/
+                const fileName = playerCastle.toLowerCase().trim();
+                castleImgEl.src = `images/${fileName}.png`;
+                castleImgEl.style.display = 'block';
+
+                // Pokud obrázek fyzicky ve složce nebude, skryje ho, aby tam nebyl rozbitý křížek
+                castleImgEl.onerror = function() {
+                    this.style.display = 'none';
+                };
+            } else {
+                castleImgEl.style.display = 'none';
+            }
+        }
 
         // 3. Vypíšeme detailní tabulku
         const tbody = document.getElementById('player-details-body');
