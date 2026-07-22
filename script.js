@@ -182,8 +182,10 @@ async function loadLeaderboard() {
                 ${medal}
             </td>
             <td>
+            <a href="player.html?name=${encodeURIComponent(p.name)}" class="player-link">
                 <strong>${p.name}</strong>
-            </td>
+            </a>
+        </td>
             <td>
                 ${p.wins}
             </td>
