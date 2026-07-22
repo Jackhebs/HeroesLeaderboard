@@ -93,59 +93,59 @@ async function loadLeaderboard() {
             return;
         }
 
-        players.sort((a,b) => b.wins - a.wins);
+      players.sort((a,b) => b.wins - a.wins);
 
-        players.forEach((p, index) => {
-            let rankClass = '';
-            let medal = `${index+1}.`;
+players.forEach((p, index) => {
+    let rankClass = '';
+    let medal = `${index+1}.`;
 
-            if (index === 0) {
-                rankClass = 'rank-1';
-                medal = '🥇 1.';
-            } else if (index === 1) {
-                rankClass = 'rank-2';
-                medal = '🥈 2.';
-            } else if (index === 2) {
-                rankClass = 'rank-3';
-                medal = '🥉 3.';
-            }
+    if (index === 0) {
+        rankClass = 'rank-1';
+        medal = '🥇 1.';
+    } else if (index === 1) {
+        rankClass = 'rank-2';
+        medal = '🥈 2.';
+    } else if (index === 2) {
+        rankClass = 'rank-3';
+        medal = '🥉 3.';
+    }
 
-            // Získání GIFu na základě bodů
-            const badgeHtml = getLeagueBadgeByPoints(p.points);
+    // Získání GIFu na základě bodů
+    const badgeHtml = getLeagueBadgeByPoints(p.points);
 
-            const tr = document.createElement('tr');
+    const tr = document.createElement('tr');
 
-            tr.innerHTML = `
-            <td class="${rankClass}">
-                ${medal}
-            </td>
-            <td>
-                <strong>${p.name}</strong>
-            </td>
-            <td>
-                ${badgeHtml}
-            </td>
-            <td>
-                ${p.wins}
-            </td>
-            <td>
-                ${p.top3}
-            </td>
-            <td>
-                ${p.games}
-            </td>
-            <td>
-                ${p.losses}
-            </td>
-            <td>
-                <span class="badge-winrate">
-                    ${p.winrate}
-                </span>
-            </td>
-            `;
+    tr.innerHTML = `
+    <td class="${rankClass}">
+        ${medal}
+    </td>
+    <td>
+        <strong>${p.name}</strong>
+    </td>
+    <td>
+        ${p.wins}
+    </td>
+    <td>
+        ${p.top3}
+    </td>
+    <td>
+        ${p.games}
+    </td>
+    <td>
+        ${p.losses}
+    </td>
+    <td>
+        <span class="badge-winrate">
+            ${p.winrate}
+        </span>
+    </td>
+    <td>
+        ${badgeHtml}
+    </td>
+    `;
 
-            tbody.appendChild(tr);
-        });
+    tbody.appendChild(tr);
+});
 
         document.getElementById('top-player').innerText = players[0].name;
 
