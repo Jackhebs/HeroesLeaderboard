@@ -51,23 +51,22 @@ async function loadLeaderboard() {
     const theadRow = document.querySelector('table thead tr');
     const activeUrl = currentMode === 'pvp' ? PVP_CSV_URL : PVE_CSV_URL;
 
-    // Sjednocená hlavička pro oba režimy, aby tabulka neuskakovala
+    // Dynamická hlavička podle režimu
     if (currentMode === 'pvp') {
         theadRow.innerHTML = `
             <th>#</th>
             <th>Hráč</th>
-            <th>Hry</th>
-            <th>Výhry</th>
-            <th>Mapa</th>
-            <th>Score</th>
+            <th>Výhry (1st)</th>
+            <th>Bedna (TOP 3)</th>
+            <th>Zápasy</th>
+            <th>Prohry</th>
+            <th>Winrate</th>
             <th>Liga</th>
         `;
     } else {
         theadRow.innerHTML = `
             <th>#</th>
             <th>Hráč</th>
-            <th>Hry</th>
-            <th>Výhry</th>
             <th>Mapa</th>
             <th>Score</th>
             <th>Liga</th>
@@ -108,35 +107,41 @@ async function loadLeaderboard() {
             }
 
             if (currentMode === 'pvp') {
-                const games = cols[1] || '-';
-                const wins = cols[2] || '-';
-                const map = cols[3] || '-';
-                const rawPoints = cols[5] || '0';
+                // PŮVODNÍ NETKNUTÉ PVP ZPRACOVÁNÍ
+                const wins = parseInt(cols[1]) || 0;
+                const top3 = parseInt(cols[2]) || 0;
+                const games = parseInt(cols[3]) || 0;
+                const losses = parseInt(cols[4]) || 0;
+
+                let winrate = cols[5] || '0 %';
+                if (!winrate.includes('%')) {
+                    const num = parseFloat(winrate.replace(',', '.'));
+                    winrate = isNaN(num) ? '0 %' : (num <= 1 && num > 0 ? Math.round(num * 100) : Math.round(num)) + ' %';
+                }
+
+                const rawPoints = cols[7] || '0';
                 const points = parseInt(rawPoints.replace(/\D/g, '')) || 0;
                 const league = getLeague(points);
 
                 players.push({
                     name,
-                    games,
                     wins,
-                    map,
-                    score: points,
+                    top3,
+                    games,
+                    losses,
+                    winrate,
                     points,
                     league
                 });
             } else {
-                // Singleplayer režim odpovídající novým sloupcům v tabulce
-                const games = cols[1] || '-';
-                const wins = cols[2] || '-';
+                // PVE REŽIM (Mapa = sloupec D / index 3, Score = sloupec E / index 4)
                 const map = cols[3] || '-';
-                const rawScore = cols[5] || '0';
+                const rawScore = cols[4] || '0';
                 const score = parseInt(rawScore.replace(/\D/g, '')) || 0;
                 const league = getLeague(score);
 
                 players.push({
                     name,
-                    games,
-                    wins,
                     map,
                     score,
                     points: score,
@@ -146,9 +151,10 @@ async function loadLeaderboard() {
         }
 
         if (players.length === 0) {
+            const colspanVal = currentMode === 'pvp' ? 8 : 5;
             tbody.innerHTML = `
                 <tr>
-                <td colspan="7">
+                <td colspan="${colspanVal}">
                 Žádní hráči v tabulce.
                 </td>
                 </tr>
@@ -158,7 +164,15 @@ async function loadLeaderboard() {
             return;
         }
 
-        players.sort((a, b) => b.points - a.points);
+        players.sort((a, b) => {
+            if (b.points !== a.points) {
+                return b.points - a.points;
+            }
+            if (currentMode === 'pvp') {
+                return b.wins - a.wins;
+            }
+            return 0;
+        });
 
         players.forEach((p, index) => {
             let rankClass = '';
@@ -177,36 +191,59 @@ async function loadLeaderboard() {
 
             const tr = document.createElement('tr');
 
-            // Jednotný vzhled řádku pro oba režimy, protože sloupce jsou totožné
-            tr.innerHTML = `
-                <td class="${rankClass}">${medal}</td>
-                <td>
-                    <a href="player.html?name=${encodeURIComponent(p.name)}" class="player-link">
-                        <strong>${p.name}</strong>
-                    </a>
-                </td>
-                <td>${p.games}</td>
-                <td>${p.wins}</td>
-                <td>${p.map}</td>
-                <td><strong>${p.score}</strong></td>
-                <td class="league-cell">
-                    <img src="${p.league.image}" class="league-image" alt="${p.league.name}">
-                    <div>${p.league.name}</div>
-                    <small>⭐ ${p.points} bodů</small>
-                </td>
-            `;
+            if (currentMode === 'pvp') {
+                tr.innerHTML = `
+                    <td class="${rankClass}">${medal}</td>
+                    <td>
+                        <a href="player.html?name=${encodeURIComponent(p.name)}" class="player-link">
+                            <strong>${p.name}</strong>
+                        </a>
+                    </td>
+                    <td>${p.wins}</td>
+                    <td>${p.top3}</td>
+                    <td>${p.games}</td>
+                    <td>${p.losses}</td>
+                    <td>
+                        <span class="badge-winrate">${p.winrate}</span>
+                    </td>
+                    <td class="league-cell">
+                        <img src="${p.league.image}" class="league-image" alt="${p.league.name}">
+                        <div>${p.league.name}</div>
+                        <small>⭐ ${p.points} bodů</small>
+                    </td>
+                `;
+            } else {
+                tr.innerHTML = `
+                    <td class="${rankClass}">${medal}</td>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.map}</td>
+                    <td><strong>${p.score}</strong></td>
+                    <td class="league-cell">
+                        <img src="${p.league.image}" class="league-image" alt="${p.league.name}">
+                        <div>${p.league.name}</div>
+                        <small>⭐ ${p.score} bodů</small>
+                    </td>
+                `;
+            }
 
             tbody.appendChild(tr);
         });
 
         document.getElementById('top-player').innerText = players[0].name;
-        document.getElementById('total-games').innerText = players.length;
+
+        if (currentMode === 'pvp') {
+            const totalGames = players.reduce((sum, p) => sum + p.wins, 0);
+            document.getElementById('total-games').innerText = totalGames;
+        } else {
+            document.getElementById('total-games').innerText = players.length;
+        }
 
     } catch (err) {
         console.error('Chyba načítání:', err);
+        const colspanVal = currentMode === 'pvp' ? 8 : 5;
         tbody.innerHTML = `
             <tr>
-            <td colspan="7" style="color:#ef4444;">
+            <td colspan="${colspanVal}" style="color:#ef4444;">
             Chyba při načítání CSV dat.
             </td>
             </tr>
