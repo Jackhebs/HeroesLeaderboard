@@ -261,16 +261,7 @@ function switchMode(mode) {
         document.getElementById('btn-pve').classList.add('active');
     }
 
-    const tbody = document.getElementById('leaderboard-body');
-    tbody.classList.add('fading');
-
-    setTimeout(() => {
-        loadLeaderboard().then(() => {
-            tbody.classList.remove('fading');
-        }).catch(() => {
-            tbody.classList.remove('fading');
-        });
-    }, 150);
+    loadLeaderboard();
 }
 
 loadLeaderboard();
