@@ -140,9 +140,21 @@ body {
     overflow-x: auto;
 }
 
+/* Pevný layout tabulky – zabrání skákání šířky při přepínání režimů */
 table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
+}
+
+/* Nastavení přechodu pro tělo tabulky */
+#leaderboard-body {
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Třída pro schování dat při načítání */
+.fading {
+    opacity: 0;
 }
 
 th {
@@ -232,6 +244,22 @@ tbody tr:hover {
     text-decoration: underline;
 }
 
+/* Plynulý přechod pro řádky tabulky při načtení */
+tbody tr {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media(max-width: 700px) {
     body {
         padding: 10px;
@@ -280,24 +308,9 @@ tbody tr:hover {
         gap: 8px;
     }
 
-.toggle-btn {
-    width: 100%;
-    text-align: center;
-    padding: 8px;
-}
-
-/* Plynulý přechod pro řádky tabulky při načtení */
-tbody tr {
-    animation: fadeIn 0.4s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .toggle-btn {
+        width: 100%;
+        text-align: center;
+        padding: 8px;
     }
 }
