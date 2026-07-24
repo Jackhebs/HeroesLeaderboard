@@ -3,43 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Heroes III HotA - Leaderboard</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <div class="container">
 
     <div class="header">
-
         <div class="logo">⚔️</div>
-
         <h1>Discord Heroes III HotA</h1>
-
         <p>Žebříček šampionů a válečníků</p>
-
     </div>
 
-
     <div class="top-cards">
-
         <div class="card">
             <div class="title">👑 Aktuální Král</div>
             <div class="value" id="top-player">-</div>
         </div>
 
-
         <div class="card">
             <div class="title">🎮 Celkem Odehraných Zápasů</div>
             <div class="value" id="total-games">-</div>
         </div>
-
     </div>
 
-<!-- PŘEPÍNAČ REŽIMŮ (PvP / Singleplayer) -->
+    <!-- PŘEPÍNAČ REŽIMŮ (PvP / Singleplayer) -->
     <div class="leaderboard-toggle">
         <button class="toggle-btn active" id="btn-pvp" onclick="switchMode('pvp')">
             ⚔️ PvP Žebříček
@@ -69,62 +58,19 @@
             </thead>
             <tbody id="leaderboard-body">
                 <tr>
-                    <td colspan="8"> <!-- ZMĚNĚNO ZE 7 NA 8 -->
+                    <td colspan="8">
                         Načítám data z Google Sheets...
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
-    
-    <div class="leaderboard-title">
-        🏆 Síň slávy
-    </div>
-
-
-    <div class="table-wrapper">
-
-        <table>
-
-            <thead>
-
-                <tr>
-                    <th>#</th>
-                    <th>Hráč</th>
-                    <th>Výhry (1st)</th>
-                    <th>Bedna (TOP 3)</th>
-                    <th>Zápasy</th>
-                    <th>Prohry</th>
-                    <th>Winrate</th>
-                    <th>Liga</th>
-                </tr>
-
-            </thead>
-
-
-            <tbody id="leaderboard-body">
-
-                <tr>
-                    <td colspan="7">
-                        Načítám data z Google Sheets...
-                    </td>
-                </tr>
-
-            </tbody>
-
-
-        </table>
-
-    </div>
-
 
     <div class="footer">
         Synchronizováno s Google Tabulkou
     </div>
 
-
 </div>
-
 
 <script src="script.js"></script>
 
