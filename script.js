@@ -133,9 +133,9 @@ async function loadLeaderboard() {
                     league
                 });
             } else {
-                // Singleplayer režim: [Hráč, Mapa, Score, Rank]
-                const map = cols[1] || '-';
-                const rawScore = cols[2] || '0';
+                // Singleplayer režim (Mapa = sloupec D / index 3, Score = sloupec E / index 4)
+                const map = cols[3] || '-';
+                const rawScore = cols[4] || '0';
                 const score = parseInt(rawScore.replace(/\D/g, '')) || 0;
                 const league = getLeague(score);
 
