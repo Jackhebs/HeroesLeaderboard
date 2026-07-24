@@ -234,7 +234,7 @@ async function loadLeaderboard() {
             const totalGames = players.reduce((sum, p) => sum + p.wins, 0);
             document.getElementById('total-games').innerText = totalGames;
         } else {
-            document.getElementById('total-games').innerText = players.length; // Počet hráčů v singleplayeru
+            document.getElementById('total-games').innerText = players.length;
         }
 
     } catch (err) {
@@ -261,7 +261,16 @@ function switchMode(mode) {
         document.getElementById('btn-pve').classList.add('active');
     }
 
-    loadLeaderboard();
+    const tbody = document.getElementById('leaderboard-body');
+    tbody.classList.add('fading');
+
+    setTimeout(() => {
+        loadLeaderboard().then(() => {
+            tbody.classList.remove('fading');
+        }).catch(() => {
+            tbody.classList.remove('fading');
+        });
+    }, 150);
 }
 
 loadLeaderboard();
