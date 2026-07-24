@@ -136,14 +136,16 @@ body {
     margin-bottom: 15px;
 }
 
+/* TABULKA A OBMIDZENÍ POSUVNÍKU */
 .table-wrapper {
-    overflow-x: auto;
+    width: 100%;
+    overflow-x: hidden;
+    position: relative;
 }
 
-/* Pevný layout tabulky – zabrání skákání šířky při přepínání režimů */
 table {
     width: 100%;
-    table-layout: fixed;
+    table-layout: auto;
     border-collapse: collapse;
 }
 
@@ -284,14 +286,6 @@ tbody tr {
 
     .top-cards {
         grid-template-columns: 1fr;
-    }
-
-    .table-wrapper {
-        overflow-x: auto;
-    }
-
-    table {
-        min-width: 650px;
     }
 
     th, td {
