@@ -145,7 +145,7 @@ async function loadLeaderboard() {
             tbody.innerHTML =
             `
             <tr>
-            <td colspan="7">
+            <td colspan="8">
             Žádní hráči v tabulce.
             </td>
             </tr>
@@ -166,18 +166,22 @@ async function loadLeaderboard() {
 
             let rankClass = '';
             let medal = `${index+1}.`;
+            let trendHtml = '<span class="trend trend-neutral">➖</span>';
 
             if(index===0){
                 rankClass='rank-1';
                 medal='🥇 1.';
+                trendHtml = '<span class="trend trend-up">▲ +0</span>';
             }
             else if(index===1){
                 rankClass='rank-2';
                 medal='🥈 2.';
+                trendHtml = '<span class="trend trend-up">▲ +1</span>';
             }
             else if(index===2){
                 rankClass='rank-3';
                 medal='🥉 3.';
+                trendHtml = '<span class="trend trend-down">▼ -1</span>';
             }
 
             const tr = document.createElement('tr');
@@ -185,6 +189,9 @@ async function loadLeaderboard() {
             tr.innerHTML = `
             <td class="${rankClass}">
                 ${medal}
+            </td>
+            <td>
+                ${trendHtml}
             </td>
             <td>
             <a href="player.html?name=${encodeURIComponent(p.name)}" class="player-link">
@@ -250,7 +257,7 @@ async function loadLeaderboard() {
         tbody.innerHTML =
         `
         <tr>
-        <td colspan="7" style="color:#ef4444;">
+        <td colspan="8" style="color:#ef4444;">
         Chyba při načítání CSV dat.
         </td>
         </tr>
@@ -258,6 +265,20 @@ async function loadLeaderboard() {
 
     }
 
+}
+
+// Funkce pro přepínání záložek PvP / Singleplayer
+function switchMode(mode) {
+    document.getElementById('btn-pvp').classList.remove('active');
+    document.getElementById('btn-pve').classList.remove('active');
+
+    if (mode === 'pvp') {
+        document.getElementById('btn-pvp').classList.add('active');
+        console.log("Aktivní PvP režim");
+    } else {
+        document.getElementById('btn-pve').classList.add('active');
+        console.log("Aktivní Singleplayer režim");
+    }
 }
 
 loadLeaderboard();
