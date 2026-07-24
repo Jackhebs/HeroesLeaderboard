@@ -39,7 +39,45 @@
 
     </div>
 
+<!-- PŘEPÍNAČ REŽIMŮ (PvP / Singleplayer) -->
+    <div class="leaderboard-toggle">
+        <button class="toggle-btn active" id="btn-pvp" onclick="switchMode('pvp')">
+            ⚔️ PvP Žebříček
+        </button>
+        <button class="toggle-btn" id="btn-pve" onclick="switchMode('pve')">
+            🤖 Singleplayer (PvE)
+        </button>
+    </div>
 
+    <div class="leaderboard-title">
+        🏆 Síň slávy
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>TREND</th> <!-- NOVÝ SLOUPEC -->
+                    <th>Hráč</th>
+                    <th>Výhry (1st)</th>
+                    <th>Bedna (TOP 3)</th>
+                    <th>Zápasy</th>
+                    <th>Prohry</th>
+                    <th>Winrate</th>
+                    <th>Liga</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                <tr>
+                    <td colspan="8"> <!-- ZMĚNĚNO ZE 7 NA 8 -->
+                        Načítám data z Google Sheets...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
     <div class="leaderboard-title">
         🏆 Síň slávy
     </div>
