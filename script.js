@@ -1,4 +1,4 @@
-// Odkaz na publikovanou Google Tabulku (CSV) - OPAVENÁ FUNKČNÍ URL
+// Odkaz na publikovanou Google Tabulku (CSV)
 const PVP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?output=csv';
 
 // Historičtí šampioni
@@ -10,6 +10,7 @@ let currentMode = 'pvp';
 let globalPvpData = [];
 let globalPveData = [];
 
+// Tvoje původní adresy na obrázky draků z ImgBB
 function getLeague(points) {
     if (points >= 1000) {
         return { 
@@ -28,19 +29,13 @@ async function fetchData() {
     try {
         const response = await fetch(PVP_SHEET_URL);
         const data = await response.text();
-        
-        // Ochrana před stažením JS kódu / HTML stránky místo CSV
-        if (data.includes('<!DOCTYPE') || data.includes('function(') || data.includes('globalThis')) {
-            throw new Error("Odkaz nevrací čistá CSV data.");
-        }
-
         parseCSV(data);
     } catch (error) {
         console.error('Chyba při načítání dat:', error);
         document.getElementById('leaderboard-body').innerHTML = `
             <tr>
                 <td colspan="8" style="color: #ef4444; text-align: center; padding: 20px;">
-                    ⚠️ Nepodařilo se načíst CSV data.
+                    ⚠️ Nepodařilo se načíst CSV data. Zkontroluj připojení.
                 </td>
             </tr>
         `;
@@ -52,21 +47,35 @@ function parseCSV(csvText) {
     globalPvpData = [];
     let totalGamesCount = 0;
 
-    for (let i = 1; i < lines.length; i++) {
+    for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
-        // Rozdělení podle čárky s ošetřením uvozovek
+        // Rozdělení CSV řádku
         const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.trim().replace(/^"|"$/g, ''));
 
-        // Ignorovat neplatné řádky nebo JS artefakty
-        if (!cols[0] || cols[0].includes('function') || cols[0].length > 25) continue;
+        // Hledáme sloupec, ve kterém je jméno hráče (přeskočíme datumy a záhlaví)
+        let nameIndex = -1;
+        for (let c = 0; c < cols.length; c++) {
+            const val = cols[c];
+            if (val && !val.toLowerCase().includes('hráč') && !val.toLowerCase().includes('jméno') && !/^\d{1,2}\.\d{1,2}\.\d{4}/.test(val)) {
+                nameIndex = c;
+                break;
+            }
+        }
 
-        const name = cols[0];
-        const wins = parseInt(cols[1]) || 0;
-        const top3 = parseInt(cols[2]) || 0;
-        const games = parseInt(cols[3]) || 0;
-        const losses = parseInt(cols[4]) || 0;
+        if (nameIndex === -1) continue;
+
+        const name = cols[nameIndex];
+        
+        // Ignorovat neplatné řádky nebo JS artefakty
+        if (!name || name.includes('function') || name.length > 25) continue;
+
+        // Načtení číselných statistik
+        const wins = parseInt(cols[nameIndex + 1]) || 0;
+        const top3 = parseInt(cols[nameIndex + 2]) || 0;
+        const games = parseInt(cols[nameIndex + 3]) || 0;
+        const losses = parseInt(cols[nameIndex + 4]) || 0;
 
         totalGamesCount += games;
 
@@ -79,6 +88,7 @@ function parseCSV(csvText) {
         });
     }
 
+    // Řazení podle výher a bodů
     globalPvpData.sort((a, b) => b.wins - a.wins || b.points - a.points);
 
     if (globalPvpData.length > 0) {
