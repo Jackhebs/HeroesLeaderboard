@@ -1,4 +1,4 @@
-// Odkazy na Google Sheets CSV (uprav podle svých URL, pokud máš jiné)
+// Odkaz na publikovanou Google Tabulku v CSV formátu
 const PVP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ/pub?output=csv'; 
 
 // Seznam historických šampionů (Jméno hráče : Text odznaku)
@@ -15,7 +15,7 @@ function getLeague(points) {
     if (points >= 1000) {
         return { 
             name: 'LEGENDÁRNÍ LIGA', 
-            image: 'https://i.ibb.co/0yQv8Zp/blue-dragon.png' // Uprav dle svých obrázků
+            image: 'https://i.ibb.co/0yQv8Zp/blue-dragon.png' 
         };
     } else {
         return { 
@@ -34,21 +34,39 @@ async function fetchData() {
     } catch (error) {
         console.error('Chyba při načítání dat:', error);
         document.getElementById('leaderboard-body').innerHTML = `
-            <tr><td colspan="8" style="color: #ef4444; text-align: center;">Chyba při načítání dat z tabulky.</td></tr>
+            <tr><td colspan="8" style="color: #ef4444; text-align: center; padding: 20px;">
+                ⚠️ Chyba při načítání dat. Zkontroluj připojení k síti.
+            </td></tr>
         `;
     }
 }
 
 // Zpracování CSV dat
 function parseCSV(csvText) {
+    // KONTROLA: Pokud Google vrátil HTML/JS stránku s chybou místo čistého CSV
+    if (csvText.includes('<!DOCTYPE html>') || csvText.includes('function(') || csvText.includes('globalThis')) {
+        console.error('Odkaz nevrátil CSV, ale HTML/JS chybovou stránku.');
+        document.getElementById('leaderboard-body').innerHTML = `
+            <tr><td colspan="8" style="color: #ef4444; text-align: center; padding: 20px;">
+                ⚠️ Google Tabulka nevrací CSV. Zkontroluj v tabulce: Soubor -> Publikovat na web -> Formát (.csv).
+            </td></tr>
+        `;
+        return;
+    }
+
     const lines = csvText.trim().split('\n');
     globalPvpData = [];
     let totalGamesCount = 0;
 
-    // Přeskočíme záhlaví (index 0)
+    // Přeskočíme záhlaví tabulky (index 0)
     for (let i = 1; i < lines.length; i++) {
-        const cols = lines[i].split(',').map(col => col.trim().replace(/^"|"$/g, ''));
-        if (cols.length < 5 || !cols[0]) continue;
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const cols = line.split(',').map(col => col.trim().replace(/^"|"$/g, ''));
+
+        // Ochrana: Ignorujeme řádky, co nemají jméno nebo jsou podezřele dlouhé (JS kód)
+        if (!cols[0] || cols[0].length > 30) continue;
 
         const name = cols[0];
         const wins = parseInt(cols[1]) || 0;
@@ -58,10 +76,7 @@ function parseCSV(csvText) {
 
         totalGamesCount += games;
 
-        // Výpočet Winrate
         const winrate = games > 0 ? Math.round((wins / games) * 100) + ' %' : '0 %';
-        
-        // Výpočet bodů pro ligu (např. výhra = 100b, top3 = 30b)
         const points = (wins * 100) + (top3 * 30);
         const league = getLeague(points);
 
@@ -70,20 +85,22 @@ function parseCSV(csvText) {
         });
     }
 
-    // Seřazení podle výher (případně bodů)
+    // Seřazení podle výher a bodů
     globalPvpData.sort((a, b) => b.wins - a.wins || b.points - a.points);
 
     // Aktualizace horních karet
     if (globalPvpData.length > 0) {
         document.getElementById('top-player').textContent = globalPvpData[0].name;
+    } else {
+        document.getElementById('top-player').textContent = '-';
     }
+
     document.getElementById('total-games').textContent = totalGamesCount;
 
-    // Vykreslení tabulky
     renderTable();
 }
 
-// Vykreslení tabulky na základě aktuálního režimu
+// Vykreslení tabulky
 function renderTable() {
     const tbody = document.getElementById('leaderboard-body');
     tbody.innerHTML = '';
@@ -91,7 +108,7 @@ function renderTable() {
     const players = currentMode === 'pvp' ? globalPvpData : globalPveData;
 
     if (players.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">Žádná data k zobrazení.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px;">Žádní hráči k zobrazení.</td></tr>`;
         return;
     }
 
@@ -110,7 +127,7 @@ function renderTable() {
             medal = '🥉 3.';
         }
 
-        // Kontrola, zda má hráč historický odznak šampiona
+        // Kontrola historického odznaku
         const winnerBadge = SEASON_WINNERS[p.name] 
             ? `<span style="margin-left: 6px; filter: drop-shadow(0 0 4px rgba(241,196,15,0.8));" title="Vítěz Sezóny 1">${SEASON_WINNERS[p.name]}</span>` 
             : '';
@@ -156,7 +173,7 @@ function renderTable() {
     });
 }
 
-// Přepínání mezi PvP a PvE
+// Přepínání PvP / Singleplayer
 function switchMode(mode) {
     currentMode = mode;
     document.getElementById('btn-pvp').classList.toggle('active', mode === 'pvp');
@@ -164,5 +181,5 @@ function switchMode(mode) {
     renderTable();
 }
 
-// Spuštění načítání po načtení stránky
+// Spuštění po načtení DOM
 document.addEventListener('DOMContentLoaded', fetchData);
