@@ -174,13 +174,14 @@ async function loadLeaderboard() {
             return 0;
         });
 
-        players.forEach((p, index) => {
+       players.forEach((p, index) => {
             let rankClass = '';
             let medal = `${index + 1}.`;
 
             if (index === 0) {
                 rankClass = 'rank-1';
-                medal = '🥇 1.';
+                // Přidána korunka 👑 pro Vítěze Sezóny na 1. místě
+                medal = '<span class="winner-crown">👑</span> 🥇 1.';
             } else if (index === 1) {
                 rankClass = 'rank-2';
                 medal = '🥈 2.';
@@ -188,8 +189,7 @@ async function loadLeaderboard() {
                 rankClass = 'rank-3';
                 medal = '🥉 3.';
             }
-
-            const tr = document.createElement('tr');
+const tr = document.createElement('tr');
 
             if (currentMode === 'pvp') {
                 tr.innerHTML = `
