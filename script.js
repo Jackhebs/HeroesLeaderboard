@@ -3,7 +3,7 @@
 const SHEET_ID = '2PACX-1vQ'; // Sem vlož přesné ID tvojí tabulky z adresy
 
 // Pokud používáš přímý publikovaný CSV odkaz, vlož ho sem:
-const PVP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ/pub?output=csv';
+const PVP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TI1Kdt2cCJrVSC4X0Y0e1DcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUaTTUSUYA2/pub?output=csv';
 
 // Historičtí šampioni
 const SEASON_WINNERS = {
