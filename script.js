@@ -1,182 +1,268 @@
-// Odkaz na publikovanou Google Tabulku (CSV)
-const PVP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?output=csv';
+const PVP_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=1436133630&single=true&output=csv';
+const PVE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBpAS7TdyBVQi1TIlKdt2cCJrVSC4X0Y0elDcUhY9g4rV0K9SaIowsn57yWeZJBYV_uVUatTUSUYA2/pub?gid=107765162&single=true&output=csv';
 
-// Historičtí šampioni
-const SEASON_WINNERS = {
-    "Honza": "👑 S1"
-};
+let currentMode = 'pvp'; // Výchozí režim
 
-let currentMode = 'pvp';
-let globalPvpData = [];
-let globalPveData = [];
-
-// Tvoje původní adresy na obrázky draků z ImgBB
 function getLeague(points) {
-    if (points >= 1000) {
-        return { 
-            name: 'LEGENDÁRNÍ LIGA', 
-            image: 'https://i.ibb.co/0yQv8Zp/blue-dragon.png' 
-        };
-    } else {
-        return { 
-            name: 'DRAČÍ MAGIE', 
-            image: 'https://i.ibb.co/L5B7h1N/pink-dragon.png'
+    if (points >= 1500) {
+        return {
+            name: "🐉 Legendární liga",
+            image: "images/Creature_Azure_Dragon.gif"
         };
     }
+    if (points >= 800) {
+        return {
+            name: "🪽 Archandělská liga",
+            image: "images/Creature_Archangel.gif"
+        };
+    }
+    if (points >= 500) {
+        return {
+            name: "✨ Dračí magie",
+            image: "images/Creature_Faerie_Dragon.gif"
+        };
+    }
+    if (points >= 300) {
+        return {
+            name: "🦅 Královská liga",
+            image: "images/Creature_Royal_Griffin.gif"
+        };
+    }
+    if (points >= 200) {
+        return {
+            name: "🪓 Monstrózní liga",
+            image: "images/Creature_Troll.gif"
+        };
+    }
+    if (points >= 100) {
+        return {
+            name: "🛡️ Strážcova liga",
+            image: "images/Creature_Pikeman.gif"
+        };
+    }
+    return {
+        name: "🥔 Sedlákova liga",
+        image: "images/Creature_Peasant.gif"
+    };
 }
 
-async function fetchData() {
+async function loadLeaderboard() {
+    const tbody = document.getElementById('leaderboard-body');
+    const theadRow = document.querySelector('table thead tr');
+    const activeUrl = currentMode === 'pvp' ? PVP_CSV_URL : PVE_CSV_URL;
+
+    // Dynamická hlavička podle režimu
+    if (currentMode === 'pvp') {
+        theadRow.innerHTML = `
+            <th>#</th>
+            <th>Hráč</th>
+            <th>Výhry (1st)</th>
+            <th>Bedna (TOP 3)</th>
+            <th>Zápasy</th>
+            <th>Prohry</th>
+            <th>Winrate</th>
+            <th>Liga</th>
+        `;
+    } else {
+        theadRow.innerHTML = `
+            <th>#</th>
+            <th>Hráč</th>
+            <th>Mapa</th>
+            <th>Score</th>
+            <th>Liga</th>
+        `;
+    }
+
     try {
-        const response = await fetch(PVP_SHEET_URL);
-        const data = await response.text();
-        parseCSV(data);
-    } catch (error) {
-        console.error('Chyba při načítání dat:', error);
-        document.getElementById('leaderboard-body').innerHTML = `
-            <tr>
-                <td colspan="8" style="color: #ef4444; text-align: center; padding: 20px;">
-                    ⚠️ Nepodařilo se načíst CSV data. Zkontroluj připojení.
+        const response = await fetch(activeUrl);
+
+        if (!response.ok) {
+            throw new Error('Nelze načíst data');
+        }
+
+        const text = await response.text();
+        const lines = text.trim().split(/\r?\n/);
+        tbody.innerHTML = '';
+
+        let players = [];
+        const delimiter = text.includes(';') ? ';' : ',';
+
+        for (let i = 0; i < lines.length; i++) {
+            const cols = lines[i]
+                .split(delimiter)
+                .map(c => c.replace(/^"|"$/g,'').trim());
+
+            if (!cols[0]) continue;
+
+            const name = cols[0];
+
+            if ([
+                'HRÁČ',
+                'Hráč',
+                'Jméno',
+                'NAME',
+                '#'
+            ].includes(name)) {
+                continue;
+            }
+
+            if (currentMode === 'pvp') {
+                // PŮVODNÍ NETKNUTÉ PVP ZPRACOVÁNÍ
+                const wins = parseInt(cols[1]) || 0;
+                const top3 = parseInt(cols[2]) || 0;
+                const games = parseInt(cols[3]) || 0;
+                const losses = parseInt(cols[4]) || 0;
+
+                let winrate = cols[5] || '0 %';
+                if (!winrate.includes('%')) {
+                    const num = parseFloat(winrate.replace(',', '.'));
+                    winrate = isNaN(num) ? '0 %' : (num <= 1 && num > 0 ? Math.round(num * 100) : Math.round(num)) + ' %';
+                }
+
+                const rawPoints = cols[7] || '0';
+                const points = parseInt(rawPoints.replace(/\D/g, '')) || 0;
+                const league = getLeague(points);
+
+                players.push({
+                    name,
+                    wins,
+                    top3,
+                    games,
+                    losses,
+                    winrate,
+                    points,
+                    league
+                });
+            } else {
+                // PVE REŽIM (Mapa = sloupec D / index 3, Score = sloupec E / index 4)
+                const map = cols[3] || '-';
+                const rawScore = cols[4] || '0';
+                const score = parseInt(rawScore.replace(/\D/g, '')) || 0;
+                const league = getLeague(score);
+
+                players.push({
+                    name,
+                    map,
+                    score,
+                    points: score,
+                    league
+                });
+            }
+        }
+
+        if (players.length === 0) {
+            const colspanVal = currentMode === 'pvp' ? 8 : 5;
+            tbody.innerHTML = `
+                <tr>
+                <td colspan="${colspanVal}">
+                Žádní hráči v tabulce.
                 </td>
+                </tr>
+            `;
+            document.getElementById('top-player').innerText = '-';
+            document.getElementById('total-games').innerText = '0';
+            return;
+        }
+
+        players.sort((a, b) => {
+            if (b.points !== a.points) {
+                return b.points - a.points;
+            }
+            if (currentMode === 'pvp') {
+                return b.wins - a.wins;
+            }
+            return 0;
+        });
+
+        players.forEach((p, index) => {
+            let rankClass = '';
+            let medal = `${index + 1}.`;
+
+            if (index === 0) {
+                rankClass = 'rank-1';
+                medal = '🥇 1.';
+            } else if (index === 1) {
+                rankClass = 'rank-2';
+                medal = '🥈 2.';
+            } else if (index === 2) {
+                rankClass = 'rank-3';
+                medal = '🥉 3.';
+            }
+
+            const tr = document.createElement('tr');
+
+            if (currentMode === 'pvp') {
+                tr.innerHTML = `
+                    <td class="${rankClass}">${medal}</td>
+                    <td>
+                        <a href="player.html?name=${encodeURIComponent(p.name)}" class="player-link">
+                            <strong>${p.name}</strong>
+                        </a>
+                    </td>
+                    <td>${p.wins}</td>
+                    <td>${p.top3}</td>
+                    <td>${p.games}</td>
+                    <td>${p.losses}</td>
+                    <td>
+                        <span class="badge-winrate">${p.winrate}</span>
+                    </td>
+                    <td class="league-cell">
+                        <img src="${p.league.image}" class="league-image" alt="${p.league.name}">
+                        <div>${p.league.name}</div>
+                        <small>⭐ ${p.points} bodů</small>
+                    </td>
+                `;
+            } else {
+                tr.innerHTML = `
+                    <td class="${rankClass}">${medal}</td>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.map}</td>
+                    <td><strong>${p.score}</strong></td>
+                    <td class="league-cell">
+                        <img src="${p.league.image}" class="league-image" alt="${p.league.name}">
+                        <div>${p.league.name}</div>
+                        <small>⭐ ${p.score} bodů</small>
+                    </td>
+                `;
+            }
+
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('top-player').innerText = players[0].name;
+
+        if (currentMode === 'pvp') {
+            const totalGames = players.reduce((sum, p) => sum + p.wins, 0);
+            document.getElementById('total-games').innerText = totalGames;
+        } else {
+            document.getElementById('total-games').innerText = players.length;
+        }
+
+    } catch (err) {
+        console.error('Chyba načítání:', err);
+        const colspanVal = currentMode === 'pvp' ? 8 : 5;
+        tbody.innerHTML = `
+            <tr>
+            <td colspan="${colspanVal}" style="color:#ef4444;">
+            Chyba při načítání CSV dat.
+            </td>
             </tr>
         `;
     }
 }
 
-function parseCSV(csvText) {
-    const lines = csvText.trim().split('\n');
-    globalPvpData = [];
-    let totalGamesCount = 0;
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        // Rozdělení CSV řádku
-        const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.trim().replace(/^"|"$/g, ''));
-
-        // Hledáme sloupec, ve kterém je jméno hráče (přeskočíme datumy a záhlaví)
-        let nameIndex = -1;
-        for (let c = 0; c < cols.length; c++) {
-            const val = cols[c];
-            if (val && !val.toLowerCase().includes('hráč') && !val.toLowerCase().includes('jméno') && !/^\d{1,2}\.\d{1,2}\.\d{4}/.test(val)) {
-                nameIndex = c;
-                break;
-            }
-        }
-
-        if (nameIndex === -1) continue;
-
-        const name = cols[nameIndex];
-        
-        // Ignorovat neplatné řádky nebo JS artefakty
-        if (!name || name.includes('function') || name.length > 25) continue;
-
-        // Načtení číselných statistik
-        const wins = parseInt(cols[nameIndex + 1]) || 0;
-        const top3 = parseInt(cols[nameIndex + 2]) || 0;
-        const games = parseInt(cols[nameIndex + 3]) || 0;
-        const losses = parseInt(cols[nameIndex + 4]) || 0;
-
-        totalGamesCount += games;
-
-        const winrate = games > 0 ? Math.round((wins / games) * 100) + ' %' : '0 %';
-        const points = (wins * 100) + (top3 * 30);
-        const league = getLeague(points);
-
-        globalPvpData.push({
-            name, wins, top3, games, losses, winrate, points, league
-        });
-    }
-
-    // Řazení podle výher a bodů
-    globalPvpData.sort((a, b) => b.wins - a.wins || b.points - a.points);
-
-    if (globalPvpData.length > 0) {
-        document.getElementById('top-player').textContent = globalPvpData[0].name;
-    } else {
-        document.getElementById('top-player').textContent = '-';
-    }
-
-    document.getElementById('total-games').textContent = totalGamesCount;
-    renderTable();
-}
-
-function renderTable() {
-    const tbody = document.getElementById('leaderboard-body');
-    tbody.innerHTML = '';
-
-    const players = currentMode === 'pvp' ? globalPvpData : globalPveData;
-
-    if (players.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px;">Žádní hráči k zobrazení.</td></tr>`;
-        return;
-    }
-
-    players.forEach((p, index) => {
-        let rankClass = '';
-        let medal = `${index + 1}.`;
-
-        if (index === 0) {
-            rankClass = 'rank-1';
-            medal = '🥇 1.';
-        } else if (index === 1) {
-            rankClass = 'rank-2';
-            medal = '🥈 2.';
-        } else if (index === 2) {
-            rankClass = 'rank-3';
-            medal = '🥉 3.';
-        }
-
-        const winnerBadge = SEASON_WINNERS[p.name] 
-            ? `<span style="margin-left: 6px; filter: drop-shadow(0 0 4px rgba(241,196,15,0.8));" title="Vítěz Sezóny 1">${SEASON_WINNERS[p.name]}</span>` 
-            : '';
-
-        const tr = document.createElement('tr');
-
-        if (currentMode === 'pvp') {
-            tr.innerHTML = `
-                <td class="${rankClass}">${medal}</td>
-                <td>
-                    <a href="player.html?name=${encodeURIComponent(p.name)}" class="player-link">
-                        <strong>${p.name}</strong> ${winnerBadge}
-                    </a>
-                </td>
-                <td>${p.wins}</td>
-                <td>${p.top3}</td>
-                <td>${p.games}</td>
-                <td>${p.losses}</td>
-                <td>
-                    <span class="badge-winrate">${p.winrate}</span>
-                </td>
-                <td class="league-cell">
-                    <img src="${p.league.image}" class="league-image" alt="${p.league.name}">
-                    <div>${p.league.name}</div>
-                    <small>⭐ ${p.points} bodů</small>
-                </td>
-            `;
-        } else {
-            tr.innerHTML = `
-                <td class="${rankClass}">${medal}</td>
-                <td><strong>${p.name}</strong> ${winnerBadge}</td>
-                <td>${p.map || '-'}</td>
-                <td><strong>${p.score || 0}</strong></td>
-                <td class="league-cell">
-                    <img src="${p.league.image}" class="league-image" alt="${p.league.name}">
-                    <div>${p.league.name}</div>
-                    <small>⭐ ${p.score || 0} bodů</small>
-                </td>
-            `;
-        }
-
-        tbody.appendChild(tr);
-    });
-}
-
 function switchMode(mode) {
     currentMode = mode;
-    document.getElementById('btn-pvp').classList.toggle('active', mode === 'pvp');
-    document.getElementById('btn-pve').classList.toggle('active', mode === 'pve');
-    renderTable();
+    document.getElementById('btn-pvp').classList.remove('active');
+    document.getElementById('btn-pve').classList.remove('active');
+
+    if (mode === 'pvp') {
+        document.getElementById('btn-pvp').classList.add('active');
+    } else {
+        document.getElementById('btn-pve').classList.add('active');
+    }
+
+    loadLeaderboard();
 }
 
-document.addEventListener('DOMContentLoaded', fetchData);
+loadLeaderboard();
