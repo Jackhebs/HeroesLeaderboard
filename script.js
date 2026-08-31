@@ -1,16 +1,19 @@
-// Odkaz na publikovanou Google Tabulku v CSV formátu
-const PVP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ/pub?output=csv'; 
+// ODKAZ NA GOOGLE TABULKU (Použij ID tvojí tabulky)
+// Pokud máš odkaz https://docs.google.com/spreadsheets/d/1ABC123XYZ/edit, vlož jen to ID
+const SHEET_ID = '2PACX-1vQ'; // Sem vlož přesné ID tvojí tabulky z adresy
 
-// Seznam historických šampionů (Jméno hráče : Text odznaku)
+// Pokud používáš přímý publikovaný CSV odkaz, vlož ho sem:
+const PVP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ/pub?output=csv';
+
+// Historičtí šampioni
 const SEASON_WINNERS = {
-    "Honza": "👑 S1" // Honza má trvalý odznak Šampiona Sezóny 1
+    "Honza": "👑 S1"
 };
 
 let currentMode = 'pvp';
 let globalPvpData = [];
 let globalPveData = [];
 
-// Určení ligy a draků podle bodů
 function getLeague(points) {
     if (points >= 1000) {
         return { 
@@ -25,48 +28,44 @@ function getLeague(points) {
     }
 }
 
-// Načtení dat z Google Sheets
 async function fetchData() {
     try {
         const response = await fetch(PVP_SHEET_URL);
         const data = await response.text();
+        
+        // Ochrana před stažením JS kódu / HTML stránky místo CSV
+        if (data.includes('<!DOCTYPE') || data.includes('function(') || data.includes('globalThis')) {
+            throw new Error("Odkaz nevrací čisté CSV data.");
+        }
+
         parseCSV(data);
     } catch (error) {
         console.error('Chyba při načítání dat:', error);
         document.getElementById('leaderboard-body').innerHTML = `
-            <tr><td colspan="8" style="color: #ef4444; text-align: center; padding: 20px;">
-                ⚠️ Chyba při načítání dat. Zkontroluj připojení k síti.
-            </td></tr>
+            <tr>
+                <td colspan="8" style="color: #ef4444; text-align: center; padding: 20px;">
+                    ⚠️ Nepodařilo se načíst CSV data.<br>
+                    Ujisti se, že v Google Tabulce dáš: <strong>Soubor -> Sdílet -> Publikovat na web -> Formát CSV</strong>.
+                </td>
+            </tr>
         `;
     }
 }
 
-// Zpracování CSV dat
 function parseCSV(csvText) {
-    // KONTROLA: Pokud Google vrátil HTML/JS stránku s chybou místo čistého CSV
-    if (csvText.includes('<!DOCTYPE html>') || csvText.includes('function(') || csvText.includes('globalThis')) {
-        console.error('Odkaz nevrátil CSV, ale HTML/JS chybovou stránku.');
-        document.getElementById('leaderboard-body').innerHTML = `
-            <tr><td colspan="8" style="color: #ef4444; text-align: center; padding: 20px;">
-                ⚠️ Google Tabulka nevrací CSV. Zkontroluj v tabulce: Soubor -> Publikovat na web -> Formát (.csv).
-            </td></tr>
-        `;
-        return;
-    }
-
     const lines = csvText.trim().split('\n');
     globalPvpData = [];
     let totalGamesCount = 0;
 
-    // Přeskočíme záhlaví tabulky (index 0)
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
-        const cols = line.split(',').map(col => col.trim().replace(/^"|"$/g, ''));
+        // Rozdělení podle čárky s ošetřením uvozovek
+        const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.trim().replace(/^"|"$/g, ''));
 
-        // Ochrana: Ignorujeme řádky, co nemají jméno nebo jsou podezřele dlouhé (JS kód)
-        if (!cols[0] || cols[0].length > 30) continue;
+        // Ignorovat neplatné řádky nebo JS artefakty
+        if (!cols[0] || cols[0].includes('function') || cols[0].length > 25) continue;
 
         const name = cols[0];
         const wins = parseInt(cols[1]) || 0;
@@ -85,10 +84,8 @@ function parseCSV(csvText) {
         });
     }
 
-    // Seřazení podle výher a bodů
     globalPvpData.sort((a, b) => b.wins - a.wins || b.points - a.points);
 
-    // Aktualizace horních karet
     if (globalPvpData.length > 0) {
         document.getElementById('top-player').textContent = globalPvpData[0].name;
     } else {
@@ -96,11 +93,9 @@ function parseCSV(csvText) {
     }
 
     document.getElementById('total-games').textContent = totalGamesCount;
-
     renderTable();
 }
 
-// Vykreslení tabulky
 function renderTable() {
     const tbody = document.getElementById('leaderboard-body');
     tbody.innerHTML = '';
@@ -127,7 +122,6 @@ function renderTable() {
             medal = '🥉 3.';
         }
 
-        // Kontrola historického odznaku
         const winnerBadge = SEASON_WINNERS[p.name] 
             ? `<span style="margin-left: 6px; filter: drop-shadow(0 0 4px rgba(241,196,15,0.8));" title="Vítěz Sezóny 1">${SEASON_WINNERS[p.name]}</span>` 
             : '';
@@ -173,7 +167,6 @@ function renderTable() {
     });
 }
 
-// Přepínání PvP / Singleplayer
 function switchMode(mode) {
     currentMode = mode;
     document.getElementById('btn-pvp').classList.toggle('active', mode === 'pvp');
@@ -181,5 +174,4 @@ function switchMode(mode) {
     renderTable();
 }
 
-// Spuštění po načtení DOM
 document.addEventListener('DOMContentLoaded', fetchData);
